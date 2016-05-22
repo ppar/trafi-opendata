@@ -1,0 +1,151 @@
+
+
+
+Open data for vehicles 4.5
+The body of the open vehicle data, version 4.5, covers details on vehicle registration, approval and also on technical data for all vehicles in road traffic, extracted from the Vehicular and Driver Data Register maintained by Trafi.
+
+Description of data content (in Finnish)
+http://www.trafi.fi/filebank/a/1433135757/74ee1d8be49178dbee2fc7df128bd5d6/17629-avoin_data_ajoneuvojen_luokitukset.xls
+
+
+- The body of data comprises a total of 5 017 436 lines
+- The data is dated 1st of April 2016
+- The date of publication is 8th of April 2016
+- File format is: ZIP-packed CSV
+- File size: 831 MB (248 MB when packed)
+- The data has been licensed under the Creative Commons Nimeä 4.0 International license.
+
+Download the open data 4.5 data package for vehicles
+http://wwwtrafifi.97.fi/opendata/160407_Ajoneuvot_4.5.zip
+
+See also
+
+Structure of the vehicle identification number
+
+Open data logos for use by developers
+
+-------------
+
+
+Ajoneuvojen avoin data 4.4
+Ajoneuvojen avoin data 4.4 -aineistosisältää kaikkien liikennekäytössä olevien ajoneuvojen rekisteröinti-, hyväksyntä- ja teknisiä tietoja Trafin ylläpitämästä ajoneuvoliikennerekisteristä.
+
+Aineistokuvaus ja muuttujaluettelo
+http://www.trafi.fi/filebank/a/1433135757/74ee1d8be49178dbee2fc7df128bd5d6/17629-avoin_data_ajoneuvojen_luokitukset.xls
+
+- Aineistossa on rivejä 5 021 314 kpl
+- Aineiston päivämäärä 1.1.2016
+- Julkaisuajankohta 13.1.2016
+- Tiedostomuoto: ZIP-pakattu CSV
+- Tiedoston koko: 829 MT (pakattuna 242 MT)
+- Aineisto on lisensoitu Creative Commons Nimeä 4.0 Kansainvälinen -     lisenssillä
+
+Lataa Ajoneuvojen avoin data 4.4 -aineisto
+http://wwwtrafifi.97.fi/opendata/AvoinData20160101.zip
+
+
+-------------
+
+
+Ajoneuvojen avoin data 4.3
+Ajoneuvojen avoin data 4.3 -aineistosisältää kaikkien liikennekäytössä olevien ajoneuvojen rekisteröinti-, hyväksyntä- ja teknisiä tietoja Trafin ylläpitämästä ajoneuvoliikennerekisteristä.
+
+Aineistokuvaus ja muuttujaluettelo
+http://www.trafi.fi/filebank/a/1433135757/74ee1d8be49178dbee2fc7df128bd5d6/17629-avoin_data_ajoneuvojen_luokitukset.xls
+
+- Aineistossa on rivejä 5 103 966 kpl
+- Aineiston päivämäärä 30.9.2015.
+- Julkaisuajankohta 13.10.2015
+- Tiedostomuoto: ZIP-pakattu CSV
+- Tiedoston koko: 841 MT (pakattuna 255 MT)
+- Aineisto on lisensoitu Creative Commons Nimeä 4.0 Kansainvälinen -     lisenssillä
+
+http://wwwtrafifi.97.fi/opendata/AvoinData_4.3_151012.zip
+
+-------------
+
+
+Ajoneuvojen avoin data 4.2
+Ajoneuvojen avoin data 4.2 -aineistosisältää kaikkien liikennekäytössä olevien ajoneuvojen rekisteröinti-, hyväksyntä- ja teknisiä tietoja Trafin ylläpitämästä ajoneuvoliikennerekisteristä.
+
+Aineistokuvaus ja muuttujaluettelo
+http://www.trafi.fi/filebank/a/1433135757/74ee1d8be49178dbee2fc7df128bd5d6/17629-avoin_data_ajoneuvojen_luokitukset.xls
+
+- Aineistossa on rivejä 5 107 978 kpl
+- Aineiston päivämäärä 30.6.2015.
+- Julkaisuajankohta 6.7.2015
+- Tiedostomuoto: ZIP-pakattu CSV
+- Tiedoston koko: 840 MT (pakattuna 250 MT)
+- Aineisto on lisensoitu Creative Commons Nimeä 4.0 Kansainvälinen -     lisenssillä
+
+Lataa Ajoneuvojen avoin data 4.2 -aineisto
+
+http://wwwtrafifi.97.fi/opendata/AvoinData4.2_20150703.zip
+
+-------------
+
+
+Ajoneuvojen avoin data 4.1
+Ajoneuvojen avoin data 4.1 -aineistosisältää kaikkien liikennekäytössä olevien ajoneuvojen rekisteröinti-, hyväksyntä- ja teknisiä tietoja Trafin ylläpitämästä ajoneuvoliikennerekisteristä.
+
+Aineistokuvaus ja muuttujaluettelo
+http://www.trafi.fi/filebank/a/1433135757/74ee1d8be49178dbee2fc7df128bd5d6/17629-avoin_data_ajoneuvojen_luokitukset.xls
+
+- Aineistossa on rivejä 5 088 354 kpl
+- Aineiston päivämäärä 31.5.2015.
+- Julkaisuajankohta 5.6.2015
+- Tiedostomuoto: ZIP-pakattu CSV
+- Tiedoston koko: 836 MT (pakattuna 255 MT)
+- Aineisto on lisensoitu Creative Commons Nimeä 4.0 Kansainvälinen -     lisenssillä
+
+http://wwwtrafifi.97.fi/opendata/Avoindata4.1_20150605.zip
+
+
+-------------
+
+
+Ajoneuvojen avoin data 3.0
+Ajoneuvojen avoin data 3.0 -aineistosisältää kaikkien liikennekäytössä olevien ajoneuvojen rekisteröinti-, hyväksyntä- ja teknisiä tietoja Trafin ylläpitämästä ajoneuvoliikennerekisteristä.
+
+Aineistokuvaus
+http://www.trafi.fi/filebank/a/1425276387/b20e0adba41ec9fd603c6b3e0546d1f1/16975-Aineistokuvaus_Ajoneuvojen_tekniset_tiedot_3_0.xlsx
+
+Datassa käytetty koodisto
+http://www.trafi.fi/filebank/a/1425029094/1ecab74bc4e9fef24caee5a38577fa90/16968-Koodisto_2015.xlsx
+
+- Aineistossa on rivejä 4 996 873 kpl
+- Aineiston päivämäärä 31.1.2015.
+- Julkaisuajankohta 2.3.2015
+- Tiedostomuoto: ZIP-pakattu CSV
+- Tiedoston koko: 774 MT (pakattuna 226 MT)
+- Aineisto on lisensoitu Creative Commons Nimeä 4.0 Kansainvälinen       -lisenssillä
+http://wwwtrafifi.97.fi/opendata/AvoinData31-1-2015-2.zip
+
+
+-------------
+
+Ajoneuvojen tekniset tiedot
+Avoin data -aineisto 2.0 sisältää kaikkien liikennekäytössä olevien ajoneuvojen rekisteröinti-, hyväksyntä- ja teknisiä tietoja Trafin ylläpitämästä ajoneuvoliikennerekisteristä. Ensimmäisessä vaiheessa julkaistu aineisto sisälsi vain henkilöautoja koskevaa dataa, nyt mukana ovat siis kaikki ajoneuvot. Aineisto ei sisällä ajoneuvojen tietoihin sisältyviä henkilötietoja.
+
+Aineisto sisältää mm.: ajoneuvoluokan, ensirekisteröintipäivämäärän, värin, korityypin, merkin, mallimerkinnän, käyttövoiman ja kunnan.
+
+Aineistossa on rivejä 5 069 929 kpl
+
+Avoin data -aineisto versio 2.0, ajankohta 31.8.2014
+
+Tiedostomuoto: ZIP-pakattu CSV
+Tiedoston koko: 707 MT (pakattuna 186 MT)
+
+Tiedoston ladatessasi hyväksyt Trafin avoimen datan lisenssin.
+http://www.trafi.fi/index.php?id=10941
+
+Ajoneuvojen tekniset tiedot
+http://wwwtrafifi.97.fi/opendata/Avoindata-20140915.zip
+
+Datassa käytetty koodisto
+http://www.trafi.fi/filebank/a/1402650899/782fd1d67f9f64628ae4e330c6a88b6a/14931-Koodisto.xlsx
+
+
+
+
+
