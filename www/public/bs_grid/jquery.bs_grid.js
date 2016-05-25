@@ -213,40 +213,42 @@
                 tools_html += '</div>';
 
                 // sorting list ------------------------------------------------
-                tools_html += '<div class="btn-group pull-right">';
+                if(settings.showSortingMenuButton){
+                    tools_html += '<div class="btn-group pull-right">';
 
-                tools_html += '<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="' + rsc_bs_dg.sorting + '">';
-                tools_html += '<span class="' + settings.sortingListLaunchButtonIconClass + '"></span>';
-                tools_html += '<span class="caret"></span>';
-                tools_html += '</button>';
+                    tools_html += '<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="' + rsc_bs_dg.sorting + '">';
+                    tools_html += '<span class="' + settings.sortingListLaunchButtonIconClass + '"></span>';
+                    tools_html += '<span class="caret"></span>';
+                    tools_html += '</button>';
 
-                tools_html += '<ul id="' + sorting_list_id + '" class="dropdown-menu dropdown-menu-right">';
+                    tools_html += '<ul id="' + sorting_list_id + '" class="dropdown-menu dropdown-menu-right">';
 
-                for(var i in settings.sorting) {
-                    var sort_name = get_sorting_name(settings.sorting[i]),
-                        checked_asc = settings.sorting[i]["order"] == "ascending" ? " checked" : "",
-                        checked_desc = settings.sorting[i]["order"] == "descending" ? " checked" : "",
-                        checked_none = settings.sorting[i]["order"] == "none" ? " checked" : "";
-                    default_sorting_list += '<li><a href="javascript:void(0);">' +
-                        '<label class="' + settings.sortingLabelCheckboxClass + '"><input type="radio" name="' + sorting_radio_name + i + '"' + checked_asc + '>' + rsc_bs_dg.sort_ascending + '</label>' +
-                        '<label class="' + settings.sortingLabelCheckboxClass + '"><input type="radio" name="' + sorting_radio_name + i + '"' + checked_desc + '>' + rsc_bs_dg.sort_descending + '</label>' +
-                        '<label class="' + settings.sortingLabelCheckboxClass + '"><input type="radio" name="' + sorting_radio_name + i + '"' + checked_none + '>' + rsc_bs_dg.sort_none + '</label>' +
-                        '<span class="' + settings.sortingNameClass + '">' + sort_name + '</span>' +
-                        '</a></li>';
+                    for(var i in settings.sorting) {
+                        var sort_name = get_sorting_name(settings.sorting[i]),
+                            checked_asc = settings.sorting[i]["order"] == "ascending" ? " checked" : "",
+                            checked_desc = settings.sorting[i]["order"] == "descending" ? " checked" : "",
+                            checked_none = settings.sorting[i]["order"] == "none" ? " checked" : "";
+                        default_sorting_list += '<li><a href="javascript:void(0);">' +
+                            '<label class="' + settings.sortingLabelCheckboxClass + '"><input type="radio" name="' + sorting_radio_name + i + '"' + checked_asc + '>' + rsc_bs_dg.sort_ascending + '</label>' +
+                            '<label class="' + settings.sortingLabelCheckboxClass + '"><input type="radio" name="' + sorting_radio_name + i + '"' + checked_desc + '>' + rsc_bs_dg.sort_descending + '</label>' +
+                            '<label class="' + settings.sortingLabelCheckboxClass + '"><input type="radio" name="' + sorting_radio_name + i + '"' + checked_none + '>' + rsc_bs_dg.sort_none + '</label>' +
+                            '<span class="' + settings.sortingNameClass + '">' + sort_name + '</span>' +
+                            '</a></li>';
+                    }
+                    default_sorting_list += '<li class="not-sortable ' + settings.columnsListDividerClass + '"></li>';
+                    default_sorting_list += '<li class="not-sortable columns-li-padding"><button class="' + settings.columnsListDefaultButtonClass + '">' + rsc_bs_dg.sorting_default + '</button></li>';
+
+                    //save default columns list
+                    if(typeof elem.data(pluginStatus)["default_sorting_list"] === "undefined") {
+                        elem.data(pluginStatus)["default_sorting_list"] = default_sorting_list;
+                    }
+
+                    tools_html += default_sorting_list;
+
+                    tools_html += '</ul>';
+
+                    tools_html += '</div>';
                 }
-                default_sorting_list += '<li class="not-sortable ' + settings.columnsListDividerClass + '"></li>';
-                default_sorting_list += '<li class="not-sortable columns-li-padding"><button class="' + settings.columnsListDefaultButtonClass + '">' + rsc_bs_dg.sorting_default + '</button></li>';
-
-                //save default columns list
-                if(typeof elem.data(pluginStatus)["default_sorting_list"] === "undefined") {
-                    elem.data(pluginStatus)["default_sorting_list"] = default_sorting_list;
-                }
-
-                tools_html += default_sorting_list;
-
-                tools_html += '</ul>';
-
-                tools_html += '</div>';
 
                 // selection list ----------------------------------------------
                 if(settings.row_primary_key &&
@@ -730,6 +732,51 @@
          */
         getDefaults: function(bootstrap_version) {
             var default_settings = {
+
+                ajaxMethod: "POST",
+
+                /**
+                 * ajaxRequestHandler is passed an object like this:
+                 *   { 
+                 *      page_num:      (int),
+                 *      rows_per_page: (int),
+                 *      columns: ... 
+                 *      sorting: ...
+                 *      filter_rules: ...
+                 *      debug_mode: ...
+                 *   }
+                 * 
+                 * It must return an object containing the query parameters
+                 * that will be sent to the REST API.
+                 */
+                ajaxRequestHandler: function(request) {return request; },
+
+                /**
+                 * The ajaxResponseHandler is passed the response from the 
+                 * JSON API. It must return an object like this, describing
+                 * the result data:
+                 *
+                 * {
+                 *     debug_message: []
+                 *     error: null
+                 *     filter_error: []
+                 *     total_rows: 100,
+                 *     page_data: [
+                 *        {
+                 *            somefield: 1234, 
+                 *            anotherfield: 'asdf',
+                 *            ...
+                 *        }, 
+                 *        {
+                 *            ....
+                 *        }
+                 *        ...
+                 *     ]
+                 * }
+                 *
+                 */
+                ajaxResponseHandler: function(response) {return response; },
+
                 pageNum: 1,
                 rowsPerPage: 10,
                 maxRowsPerPage: 100,
@@ -776,6 +823,7 @@
                 useFilters: true,
                 showRowNumbers: false,
                 showSortingIndicator: true,
+                showSortingMenuButton: true,
                 useSortableLists: true,
                 customHTMLelementID1: "",
                 customHTMLelementID2: "",
@@ -1031,18 +1079,20 @@
 
             // fetch page data and display datagrid
             var res = $.ajax({
-                type: "POST",
+                type: s.ajaxMethod,
                 url: s.ajaxFetchDataURL,
-                data: {
+                data: s.ajaxRequestHandler({
                     page_num: s.pageNum,
                     rows_per_page: s.rowsPerPage,
                     columns: s.columns,
                     sorting: s.sorting,
                     filter_rules: s.filterOptions.filter_rules,
                     debug_mode: s.debug_mode
-                },
+                }),
                 dataType: "json",
                 success: function(data) {
+                    data = s.ajaxResponseHandler(data);
+
                     var server_error, filter_error, row_primary_key, total_rows, page_data, page_data_len, v,
                         columns = s.columns,
                         col_len = columns.length,
@@ -1215,7 +1265,7 @@
                     // trigger event onDisplay
                     elem.triggerHandler("onDisplay");
 
-                }
+                } // </success: function()>
             });
 
             return res;
