@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+    <!-- meta name="description" content=""-->
+    <!-- meta name="author" content="" -->
+    <!-- link rel="icon" href="../../favicon.ico" -->
+
+    <title>Vehicle Data</title>
+
+    <!-- jQuery -->
+    <script type="text/javascript" src="/bc/jquery/dist/jquery.min.js"></script>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/bc/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+    <!-- Bootstrap core JavaScript -->
+    <script src="/bc/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- Bootstrap debugging -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <!-- script src="../../assets/js/ie-emulation-modes-warning.js"></script -->
+
+
+    <!--  JQUERY-UI (only sortable and datepicker is needed) -->
+    <link rel="stylesheet" type="text/css" href="/bc/jquery-ui/themes/ui-lightness/jquery-ui.css"/>
+    <script type="text/javascript"          src="/bc/jquery-ui/jquery-ui.min.js"></script>
+
+    <!--  if timepicker is used in filters -->
+    <!-- link rel="stylesheet" type="text/css" href="/path/to/jquery-ui-timepicker-addon.min.css"/-->
+    <!-- script type="text/javascript" src="/path/to/jquery-ui-timepicker-addon.min.js"></script-->
+    <!--  if touch event support is needed (mobile devices) -->
+    <!-- script type="text/javascript" src="/path/to/jquery.ui.touch-punch.min.js"></script-->
+
+    <!--  PAGINATION plugin -->
+    <link rel="stylesheet" type="text/css" href="/bs_pagination/jquery.bs_pagination.min.css"/>
+    <script type="text/javascript"          src="/bs_pagination/jquery.bs_pagination.min.js"></script>
+    <script type="text/javascript"          src="/bs_pagination/localization/en.min.js"></script>
+    
+    <!--  FILTERS plugin --> 
+    <link rel="stylesheet" type="text/css" href="/jui_filter_rules/minified/jquery.jui_filter_rules.bs.min.css"/>
+    <script type="text/javascript"          src="/jui_filter_rules/minified/jquery.jui_filter_rules.min.js"></script>
+    <script type="text/javascript"          src="/jui_filter_rules/minified/localization/en.min.js"></script>
+
+    <!--  required from filters plugin -->
+    <script type="text/javascript" src="/bc/moment/min/moment.min.js"></script>
+    
+    <!--  DATAGRID plugin -->
+    <link rel="stylesheet" type="text/css" href="/bs_grid/minified/jquery.bs_grid.min.css"/>
+    <script type="text/javascript"          src="/bs_grid/jquery.bs_grid.js"></script>
+    <script type="text/javascript"          src="/bs_grid/minified/localization/en.min.js"></script>
+
+    <!-- testing dynatable -->
+    <!-- link rel="stylesheet" media="all" href="/bc/dynatable/jquery.dynatable.css" / -->
+    <!-- script type="text/javascript" src="/bc/dynatable/jquery.dynatable.js"></script -->
+  
+    <!-- jQuery Bootgrid -->
+    <!-- link href="/bc/jquery.bootgrid/dist/jquery.bootgrid.css"/ -->
+    <!-- script src="/bc/jquery.bootgrid/dist/jquery.bootgrid.js"></script -->
+
+    <!-- Local CSS and JS -->
+    <link rel="stylesheet" href="/css/navbar.css"/>
+    <link rel="stylesheet" href="/css/style.css"/>
+    <script type="text/javascript" src="/js/demo.js"></script>
+
+    
+  </head>
+
+  <body>
+
+    <!-- container -->
+    <div class="container">
+
+      <!-- Static navbar -->
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Vehicle Data</a>
+          </div>
+          <!--div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#">About</a></li>
+              <li><a href="#">Contact</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">Action</a></li>
+                  <li><a href="#">Another action</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li role="separator" class="divider"></li>
+                  <li class="dropdown-header">Nav header</li>
+                  <li><a href="#">Separated link</a></li>
+                  <li><a href="#">One more separated link</a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li class="active"><a href="./">Default <span class="sr-only">(current)</span></a></li>
+              <li><a href="../navbar-static-top/">Static top</a></li>
+              <li><a href="../navbar-fixed-top/">Fixed top</a></li>
+            </ul>
+          </div--><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </nav>
+
+      <!-- Main component for a primary marketing message or call to action -->
+      <!-- div class="jumbotron">
+        <h1>Navbar example</h1>
+        <p>This example is a quick exercise to illustrate how the default, static navbar and fixed to top navbar work. It includes the responsive CSS and HTML, so it also adapts to your viewport and device.</p>
+        <p>
+          <a class="btn btn-lg btn-primary" href="../../components/#navbar" role="button">View navbar docs &raquo;</a>
+        </p>
+      </div -->
+      
+      <!-- Content -->
+      <!--  data-toggle="bootgrid" data-ajax="true" data-url="/api/v1.0/vehicles/list"  
+           -->
+      <!-- table id="vehicle_table"  class="table table-condensed table-hover table-striped">
+        <thead>
+          <tr>
+          </tr>
+        </thead>
+      </table -->
+      <div id="vehicle_table"></div>
+
+    </div> <!-- /container -->
+  </body>
+</html>
+
+
+          <!-- 
+          <th data-dynatable-column="ajoneuvoluokka">ajoneuvoluokka</th><th data-dynatable-column="ensirekisterointipvm">ensirekisterointipvm</th><th data-dynatable-column="ajoneuvoryhma">ajoneuvoryhma</th><th data-dynatable-column="ajoneuvonkaytto">ajoneuvonkaytto</th><th data-dynatable-column="variantti">variantti</th><th data-dynatable-column="versio">versio</th><th data-dynatable-column="kayttoonottopvm">kayttoonottopvm</th><th data-dynatable-column="vari">vari</th><th data-dynatable-column="ovienLukumaara">ovienLukumaara</th><th data-dynatable-column="korityyppi">korityyppi</th><th data-dynatable-column="ohjaamotyyppi">ohjaamotyyppi</th><th data-dynatable-column="istumapaikkojenLkm">istumapaikkojenLkm</th><th data-dynatable-column="omamassa">omamassa</th><th data-dynatable-column="teknSuurSallKokmassa">teknSuurSallKokmassa</th><th data-dynatable-column="tieliikSuurSallKokmassa">tieliikSuurSallKokmassa</th><th data-dynatable-column="ajonKokPituus">ajonKokPituus</th><th data-dynatable-column="ajonLeveys">ajonLeveys</th><th data-dynatable-column="ajonKorkeus">ajonKorkeus</th><th data-dynatable-column="kayttovoima">kayttovoima</th><th data-dynatable-column="iskutilavuus">iskutilavuus</th><th data-dynatable-column="suurinNettoteho">suurinNettoteho</th><th data-dynatable-column="sylintereidenLkm">sylintereidenLkm</th><th data-dynatable-column="ahdin">ahdin</th><th data-dynatable-column="sahkohybridi">sahkohybridi</th><th data-dynatable-column="merkkiSelvakielinen">merkkiSelvakielinen</th><th data-dynatable-column="mallimerkinta">mallimerkinta</th><th data-dynatable-column="vaihteisto">vaihteisto</th><th data-dynatable-column="vaihteidenLkm">vaihteidenLkm</th><th data-dynatable-column="kaupallinenNimi">kaupallinenNimi</th><th data-dynatable-column="voimanvalJaTehostamistapa">voimanvalJaTehostamistapa</th><th data-dynatable-column="tyyppihyvaksyntanro">tyyppihyvaksyntanro</th><th data-dynatable-column="yksittaisKayttovoima">yksittaisKayttovoima</th><th data-dynatable-column="kunta">kunta</th><th data-dynatable-column="Co2">Co2</th><th data-dynatable-column="matkamittarilukema">matkamittarilukema</th><th data-dynatable-column="alue">alue</th><th data-dynatable-column="valmistenumero2">valmistenumero2</th><th data-dynatable-column="jarnro">jarnro</th>
+
+          -->
+
+          
