@@ -4,8 +4,9 @@ console.log('routes.js: starting');
 var express = require('express');
 var validator = require('validator');
 var async = require('async');
+//var mongoosePaginate = require('mongoose-paginate');
 
-//var logger = require('../logger');     
+//var logger = require('../logger');
 //var security = require('../config/security');
 
 // == Schema  ==================
@@ -85,7 +86,7 @@ function _getVehicleSchema(){
 
 // == Initialize ===========================
 
-exports.addAPIRouter = function(app, mongoose) {
+exports.addAPIRouter = function(app, mongoose, mongoosePaginate) {
     //
     var router = express.Router();
 
@@ -93,7 +94,8 @@ exports.addAPIRouter = function(app, mongoose) {
     // Create schemas and models
     console.log('creating vehicleSchema');
     var vehicleSchema = new mongoose.Schema(_getVehicleSchema(), { collection: 'vehicles' } );
-
+    vehicleSchema.plugin(mongoosePaginate);
+    
     //vehicleSchema.index({email : 1}, {unique:true});
     //vehicleSchema.index({sp_api_key_id : 1}, {unique:true});
     //userFeedEntrySchema.index({userID : 1, feedID : 1, feedEntryID : 1, read : 1});
@@ -134,11 +136,148 @@ exports.addAPIRouter = function(app, mongoose) {
     });
     
     // ----------------------------------------------
+    // List all vehicles, paged
+    // 
+    // GET parameters:
+    //    page:               Number of page to return (default 1)
+    //    limit:              Number of items per page (default 10)
+    //
+    //    resultParamDocs:    Override the name of the 'docs'  property in the response JSON
+    //    resultParamTotal:   Override the name of the 'total' property in the response JSON
+    //    resultParamLimit:   Override the name of the 'limit' property in the response JSON
+    //    resultParamPage:    Override the name of the 'page'  property in the response JSON
+    //    resultParamPages:   Override the name of the 'pages' property in the response JSON
+    //
+    // Result format:
+    //  {
+    //     "docs": [
+    //         {
+    //             "_id": "5740d30bfa5bd80d9538a977",
+    //             "vaihteisto": "",
+    //             "kayttoonottopvm": "19670000",
+    //             "versio": "",
+    //                 ....
+    //         },
+    //         {
+    //                 .....
+    //         }
+    //     ],
+    //     total: 5017436,
+    //     limit: 10,
+    //     page: 1,
+    //     pages: 501744
+    //  }
+    //
+    router.get('/vehicles/listPaged', function(req, res) {
+        var paginateOptions = {
+            page: req.query.page   || 1,
+            limit: req.query.limit || 10
+        };
+
+        var resultParams = {
+            'docs':   req.query.resultParamDocs  || 'docs',
+            'total':  req.query.resultParamTotal || 'total',
+            'limit':  req.query.resultParamLimit || 'limit',
+            'page':   req.query.resultParamPage  || 'page',
+            'pages':  req.query.resultParamPages || 'pages'
+        };
+
+        delete req.query.pageNumber;
+        delete req.query.pageSize;
+
+        delete req.query.resultParamDocs;
+        delete req.query.resultParamTotal;
+        delete req.query.resultParamLimit;
+        delete req.query.resultParamPage;
+        delete req.query.resultParamPages;
+
+        //var filterParams = req.query;
+        var filterParams = {};
+        
+        console.log('filterParams:');
+        console.log(filterParams);
+        
+        var resultStatus = null;
+        var resultJSON = {};
+        var errStr = null;
+        //var state = {};
+
+        var tasks = [
+            function findVehicles(cb){
+                console.log('Querying MongoDB');
+                VehicleModel.paginate(filterParams, paginateOptions, function(err, mongoResult){
+                    console.log('Got response');
+                    // 500
+                    if(err){
+                        errStr = 'Error querying MongoDB';
+                        resultStatus = 500;
+                        resultJSON = { error: errStr };
+                        console.log(errStr);
+                        console.log(err);
+                        cb(new Error(errStr));
+                        return;
+                    }
+
+                    console.log('Success, result size: ' + mongoResult.length);
+
+                    resultStatus = 200;
+                    
+                    for(pn in resultParams){
+                        resultJSON[resultParams[pn]] = mongoResult[pn];
+                    }
+
+                    cb(null);
+                });
+            }
+        ];
+
+        async.series(tasks, function finalizer(err, results){
+            console.log('Finalizing request');
+            if(null == resultStatus){
+                res.status(200);
+            } else {
+                res.status(resultStatus);
+            }
+            res.json(resultJSON);
+            console.log('resultJSON set');
+        });
+        
+        
+    });
+
+    // ----------------------------------------------
     // Search
     router.get('/vehicles/search', function(req, res) {
         console.log('GET /vehicles/search');
-        //logger.debug('Router for /vehicles/search');
-        // 
+
+        var resultStatus = null;
+        var resultJSON = null;
+        var errStr = null;
+        //var state = {};
+
+        var tasks = [
+            function findVehicles(cb){
+                // FIXME: Passing req.query directly to .find() might not be safe,
+                // also, should do substring matches & other operators
+                VehicleModel.find(req.query, function(err, docs){
+                    assert.equal(null, err);
+                    //assert.equal(10, docs.length);
+                    resultJSON.vehicles = docs;
+                });
+                cb(null);
+            }
+        ];
+
+        async.series(tasks, function finalizer(err, results){
+            if(null == resultStatus){
+                res.status(200);
+            } else {
+                res.status(resultStatus);
+            }
+            res.json(resultJSON);
+        });
+        
+        
     });
 
     // ----------------------------------------------
@@ -160,7 +299,7 @@ exports.addAPIRouter = function(app, mongoose) {
         var resultStatus = null;
         var resultJSON = null;
         var errStr = null;
-        var state = {};
+        //var state = {};
 
         //
         var getVehiclePropsTasks = [

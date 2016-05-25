@@ -4,6 +4,8 @@ console.log('server.js: starting');
 var express = require('express');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var mongoosePaginate = require('mongoose-paginate');
+
 //var morgan = require('morgan');
 
 // == Local Modules ======================
@@ -54,7 +56,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Set content-type to application/json
 console.log('addAPIRouter()');
-routes.addAPIRouter(app, mongoose);
+routes.addAPIRouter(app, mongoose, mongoosePaginate);
 
 // Default route
 console.log('Defining default route');
