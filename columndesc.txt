@@ -1,4 +1,4 @@
-ajoneuvoluokka	enum		10	1	Ajoneuvoluokka	Ajoneuvon direktiivin mukainen luokittelu.	Ajoneuvoluokka	Ajoneuvon direktiivin mukainen luokittelu.	Class	Vehicle Clas according to EU directive
+ajoneuvoluokka	enum		10	1	Ajoneuvoluokka	Ajoneuvon direktiivin mukainen luokittelu.	Ajoneuvoluokka	Ajoneuvon direktiivin mukainen luokittelu.	Class	Vehicle Class according to EU directive
 ensirekisterointipvm	date		32	0	Ensirek.pvm.	Ajoneuvon ensirekisteröintipäivä.	Ensirek.pvm.	Ajoneuvon ensirekisteröintipäivä.	Registered on	Initial registration date
 ajoneuvoryhma	enum		11	0	Ryhmä	Ajoneuvoluokkaa tarkempi luokittelu ajoneuvoille	Ryhmä	Ajoneuvoluokkaa tarkempi luokittelu ajoneuvoille	Group	
 ajoneuvonkaytto	enum		40	0	Käyttö	Ajoneuvon käyttötieto.	Käyttö	Ajoneuvon käyttötieto.	Use	
@@ -27,8 +27,8 @@ vaihteidenLkm	string		71	0	Vaihteiden lkm	Eteenpäin vievien vaihteiden lukumä�
 kaupallinenNimi	string		21	1	Malli (kaupall.)	Valmistajan ilmoittama kaupallinen nimi.	Malli (kaupall.)	Valmistajan ilmoittama kaupallinen nimi.	Model (trade name)	
 voimanvalJaTehostamistapa	string		80	0	Jarrut	Ajoneuvon jarrujen voimanvälitys  ja tehostamistapa.	Jarrut	Ajoneuvon jarrujen voimanvälitys  ja tehostamistapa.	Brakes	
 tyyppihyvaksyntanro	string		23	0	Tyyppihyväksyntänro	Ajoneuvon tyypin yksilöivä tunniste.	Tyyppihyväksyntänro	Ajoneuvon tyypin yksilöivä tunniste.	Type approval no	
-variantti	string		24	1	Variantti	Ajoneuvon variantin yksilöivä tunniste	Variantti	Ajoneuvon variantin yksilöivä tunniste	Variant	
-versio	string		25	1	Versio	Ajoneuvon version yksilöivä tunniste	Versio	Ajoneuvon version yksilöivä tunniste	Version	
+variantti	string		24	0	Variantti	Ajoneuvon variantin yksilöivä tunniste	Variantti	Ajoneuvon variantin yksilöivä tunniste	Variant	
+versio	string		25	0	Versio	Ajoneuvon version yksilöivä tunniste	Versio	Ajoneuvon version yksilöivä tunniste	Version	
 yksittaisKayttovoima	string		61	0	Käyttövoima (EURO IV)	 Ajoneuvolla käyttövoimakohtaiset tiedot kyselylajista 6xx lukien (EURO VI tiedot)	Käyttövoima (EURO IV)	 Ajoneuvolla käyttövoimakohtaiset tiedot kyselylajista 6xx lukien (EURO VI tiedot)	Fuel (EURO IV)	
 kunta	enum		101	1	Kunta	Ajoneuvon todennäköisin käyttökunta 	Kunta	Ajoneuvon todennäköisin käyttökunta 	Municipality	
 Co2	number		67	0	CO2	Ajoneuvon hiilidioksidipäästö (CO2) grammoina.	CO2	Ajoneuvon hiilidioksidipäästö (CO2) grammoina.	CO2	CO2 emissions in grams

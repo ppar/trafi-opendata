@@ -11,17 +11,20 @@
 #     > metadata.json
 #
 # Where:
+#
 # - columndesc.txt contains supplemented column descriptions, \t-delimited, UTF-8:
-#   - name
-#   - type
-#   - format
-#   - additional info
-#   - shortname (fi)
-#   - desc (fi)
-#   - shortname (sv)
-#   - desc (sv)
-#   - shortname (en)
-#   - desc (en)
+#   - column name
+#   - Type
+#   - Unit
+#   - presentation order  (used in web UI, not included in API metadata)
+#   - default visibility  (used in web UI, not included in API metadata)
+#   - Name FI
+#   - Desc FI
+#   - Name SV
+#   - Desc SV
+#   - Name EN
+#   - Desc EN
+#
 # - each of the *.tmp files contains data from the respective sheets
 #   in "17629-avoin_data_ajoneuvojen_luokitukset.xls", in \t -delimited
 #   form, UTF-8-encoded.
@@ -112,18 +115,24 @@ for line in fp['columndesc']:
             # but some of the values contain dots, which is not allowed
             # in MongoDB's BSON keys, so we'll just store it in 'key'
             b = enumLine.rstrip("\n").split("\t")
+
+            if colname == 'ajoneuvoluokka':
+                prefix = b[0] + ' '
+            else:
+                prefix = ''
+
             if colname == 'ajoneuvoluokka' or colname == 'ajoneuvonkaytto':
                 metadata['vehicles']['columns'][colname]['enum'].append({
                     'key': b[0],
                     'name': {
-                        'fi': b[1],
-                        'sv': b[3],
-                        'en': b[5]
+                        'fi': prefix + b[1],
+                        'sv': prefix + b[3],
+                        'en': prefix + b[5]
                     },
                     'desc': {
-                        'fi': b[2],
-                        'sv': b[4],
-                        'en': b[6]
+                        'fi': prefix + b[2],
+                        'sv': prefix + b[4],
+                        'en': prefix + b[6]
                     }
                 })
                 
@@ -131,11 +140,27 @@ for line in fp['columndesc']:
                 metadata['vehicles']['columns'][colname]['enum'].append({
                     'key': b[0],
                     'name': {
-                        'fi': b[1],
-                        'sv': b[2],
-                        'en': b[3]
+                        'fi': prefix + b[1],
+                        'sv': prefix + b[2],
+                        'en': prefix + b[3]
                     }
                 })
+                
+        # Justified Anciets of MUUMUU
+        if colname == 'ajoneuvoluokka':
+            metadata['vehicles']['columns'][colname]['enum'].append({
+                'key': 'MUU',
+                'name': {
+                    'fi': 'MUU',
+                    'sv': 'MUU',
+                    'en': '(Other)'
+                },
+                'desc': {
+                    'fi': 'MUU - Muu luokka',
+                    'sv': 'MUU - Muu luokka',
+                    'en': 'MUU - Other Class'
+                }
+            })
 
 # All done
 print(json.dumps(metadata, indent=4))

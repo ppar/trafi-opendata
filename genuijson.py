@@ -30,14 +30,14 @@ for line in fp:
     colType = a[1]
     colUnit = a[2]
 
-    # Not used in API metadata, only UI
-    colPresentationOrder = a[3]
-    colDefaultVisibility = a[4]
+    colPresentationOrder = int(a[3])
+    #colDefaultVisibility = (True == a[4] or 'true' == a[4].lower() or '1' == a[4])
+    colDefaultVisibility = ('1' == a[4])
 
     data.append({
-        'columnName': a[0],
-        'presentationOrder': a[3],
-        'defaultVisibility': a[4]
+        'columnName': colname,
+        'presentationOrder': colPresentationOrder,
+        'defaultVisibility': colDefaultVisibility
     })
     
 # All done
