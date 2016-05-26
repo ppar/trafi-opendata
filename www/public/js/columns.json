@@ -1,0 +1,197 @@
+[
+    {
+        "presentationOrder": "10",
+        "columnName": "ajoneuvoluokka",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "32",
+        "columnName": "ensirekisterointipvm",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "11",
+        "columnName": "ajoneuvoryhma",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "40",
+        "columnName": "ajoneuvonkaytto",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "31",
+        "columnName": "kayttoonottopvm",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "94",
+        "columnName": "vari",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "93",
+        "columnName": "ovienLukumaara",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "90",
+        "columnName": "korityyppi",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "91",
+        "columnName": "ohjaamotyyppi",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "92",
+        "columnName": "istumapaikkojenLkm",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "50",
+        "columnName": "omamassa",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "51",
+        "columnName": "teknSuurSallKokmassa",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "52",
+        "columnName": "tieliikSuurSallKokmassa",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "53",
+        "columnName": "ajonKokPituus",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "54",
+        "columnName": "ajonLeveys",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "55",
+        "columnName": "ajonKorkeus",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "60",
+        "columnName": "kayttovoima",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "62",
+        "columnName": "iskutilavuus",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "63",
+        "columnName": "suurinNettoteho",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "64",
+        "columnName": "sylintereidenLkm",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "65",
+        "columnName": "ahdin",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "66",
+        "columnName": "sahkohybridi",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "20",
+        "columnName": "merkkiSelvakielinen",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "22",
+        "columnName": "mallimerkinta",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "70",
+        "columnName": "vaihteisto",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "71",
+        "columnName": "vaihteidenLkm",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "21",
+        "columnName": "kaupallinenNimi",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "80",
+        "columnName": "voimanvalJaTehostamistapa",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "23",
+        "columnName": "tyyppihyvaksyntanro",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "24",
+        "columnName": "variantti",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "25",
+        "columnName": "versio",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "61",
+        "columnName": "yksittaisKayttovoima",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "101",
+        "columnName": "kunta",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "67",
+        "columnName": "Co2",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "900",
+        "columnName": "jarnro",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "100",
+        "columnName": "alue",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "110",
+        "columnName": "matkamittarilukema",
+        "defaultVisibility": "0"
+    },
+    {
+        "presentationOrder": "26",
+        "columnName": "valmistenumero2",
+        "defaultVisibility": "1"
+    },
+    {
+        "presentationOrder": "30",
+        "columnName": "kayttoonottovuosi",
+        "defaultVisibility": "1"
+    }
+]
