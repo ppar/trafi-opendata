@@ -1,0 +1,39 @@
+ajoneuvoluokka	enum		10	1	Ajoneuvoluokka	Ajoneuvon direktiivin mukainen luokittelu.	Ajoneuvoluokka	Ajoneuvon direktiivin mukainen luokittelu.	Class	Vehicle Clas according to EU directive
+ensirekisterointipvm	date		32	0	Ensirek.pvm.	Ajoneuvon ensirekisteröintipäivä.	Ensirek.pvm.	Ajoneuvon ensirekisteröintipäivä.	Registered on	Initial registration date
+ajoneuvoryhma	enum		11	0	Ryhmä	Ajoneuvoluokkaa tarkempi luokittelu ajoneuvoille	Ryhmä	Ajoneuvoluokkaa tarkempi luokittelu ajoneuvoille	Group	
+ajoneuvonkaytto	enum		40	0	Käyttö	Ajoneuvon käyttötieto.	Käyttö	Ajoneuvon käyttötieto.	Use	
+kayttoonottopvm	date		31	0	Käyttöönottopvm.	Ajoneuvon käyttöönottopäivä	Käyttöönottopvm.	Ajoneuvon käyttöönottopäivä	Commission date	Initial commission date
+vari	enum		94	1	Väri	Ajoneuvon väri.	Väri	Ajoneuvon väri.	Color	
+ovienLukumaara	number		93	0	Ovien lkm	Ajoneuvon ovien lukumäärä.	Ovien lkm	Ajoneuvon ovien lukumäärä.	Doors	Door count
+korityyppi	enum		90	1	Korityyppi	Ajoneuvon korityyppi.	Korityyppi	Ajoneuvon korityyppi.	Chassis	Chassis Type
+ohjaamotyyppi	enum		91	0	Ohjaamo	Ajoneuvon ohjaamotyyppi.	Ohjaamo	Ajoneuvon ohjaamotyyppi.	Cockpit	
+istumapaikkojenLkm	number		92	0	Istumapaikkoja	Istumapaikkojen lukumäärä.	Istumapaikkoja	Istumapaikkojen lukumäärä.	Seats	
+omamassa	number	kg	50	0	Massa, oma	Ajoneuvon mitattu koko omamassa kilogrammoina.	Massa, oma	Ajoneuvon mitattu koko omamassa kilogrammoina.	Mass, own	Measured mass in kg
+teknSuurSallKokmassa	number	kg	51	0	Massa, tekn suurin	Teknisesti suurin sallittu kokonaismassa kilogrammoina (valmistajan sallima).	Massa, tekn suurin	Teknisesti suurin sallittu kokonaismassa kilogrammoina (valmistajan sallima).	Mass, tech max	Maximum technically allowed mass in kg (manufacturer reported)
+tieliikSuurSallKokmassa	number	kg	52	0	Massa, tieliik suurin	Tieliikenteessä suurin sallittu kokonaismassa kiloina.	Massa, tieliik suurin	Tieliikenteessä suurin sallittu kokonaismassa kiloina.	Mass, road max	Maximum allowed mass for road use in kg
+ajonKokPituus	number	mm	53	0	Pituus	Ajoneuvon kokonaispituus millimetreinä.	Pituus	Ajoneuvon kokonaispituus millimetreinä.	Length	Length in mm
+ajonLeveys	number	mm	54	0	Leveys	Ajoneuvon leveys (mm)	Leveys	Ajoneuvon leveys (mm)	Width	Width in mm
+ajonKorkeus	number	mm	55	0	Korkeus	Ajoneuvon korkeus (mm)	Korkeus	Ajoneuvon korkeus (mm)	Height	Height in mm
+kayttovoima	enum		60	1	Käyttövoima	Ajoneuvon käyttövoima.	Käyttövoima	Ajoneuvon käyttövoima.	Fuel	
+iskutilavuus	number	cm3	62	1	Iskutilavuus	Moottorin iskutilavuus kuutiosenttimetreinä (cm3).	Iskutilavuus	Moottorin iskutilavuus kuutiosenttimetreinä (cm3).	Displacement	Engine displacement in cm3
+suurinNettoteho	number		63	0	Nettoteho	Moottorin suurin nettoteho kilowatteina (kW).	Nettoteho	Moottorin suurin nettoteho kilowatteina (kW).	Net Power	Maximum net power of engine in kW
+sylintereidenLkm	number		64	0	Sylinterit	Sylintereiden lukumäärä.	Sylinterit	Sylintereiden lukumäärä.	Cylinders	Number of Cylinders
+ahdin	bool		65	0	Ahdin	Kyllä/ei  tieto ahtimen olemassaolosta.	Ahdin	Kyllä/ei  tieto ahtimen olemassaolosta.	Charger	Charger exists
+sahkohybridi	bool		66	0	Sähköhybridi	Onko ajoneuvo sähköhybridi	Sähköhybridi	Onko ajoneuvo sähköhybridi	Electric Hybrid	
+merkkiSelvakielinen	string		20	1	Merkki	Ajoneuvon merkki selväkielisenä	Merkki	Ajoneuvon merkki selväkielisenä	Make	
+mallimerkinta	string		22	0	Malli ja tyyppi	Ajoneuvon mallimerkintä.	Malli ja tyyppi	Ajoneuvon mallimerkintä.	Model and type	
+vaihteisto	string		70	0	Vaihteisto	Vaihteiston tyyppi.	Vaihteisto	Vaihteiston tyyppi.	Transmission	Transmission Type
+vaihteidenLkm	string		71	0	Vaihteiden lkm	Eteenpäin vievien vaihteiden lukumäärä.	Vaihteiden lkm	Eteenpäin vievien vaihteiden lukumäärä.	Gears	Gear count
+kaupallinenNimi	string		21	1	Malli (kaupall.)	Valmistajan ilmoittama kaupallinen nimi.	Malli (kaupall.)	Valmistajan ilmoittama kaupallinen nimi.	Model (trade name)	
+voimanvalJaTehostamistapa	string		80	0	Jarrut	Ajoneuvon jarrujen voimanvälitys  ja tehostamistapa.	Jarrut	Ajoneuvon jarrujen voimanvälitys  ja tehostamistapa.	Brakes	
+tyyppihyvaksyntanro	string		23	0	Tyyppihyväksyntänro	Ajoneuvon tyypin yksilöivä tunniste.	Tyyppihyväksyntänro	Ajoneuvon tyypin yksilöivä tunniste.	Type approval no	
+variantti	string		24	1	Variantti	Ajoneuvon variantin yksilöivä tunniste	Variantti	Ajoneuvon variantin yksilöivä tunniste	Variant	
+versio	string		25	1	Versio	Ajoneuvon version yksilöivä tunniste	Versio	Ajoneuvon version yksilöivä tunniste	Version	
+yksittaisKayttovoima	string		61	0	Käyttövoima (EURO IV)	 Ajoneuvolla käyttövoimakohtaiset tiedot kyselylajista 6xx lukien (EURO VI tiedot)	Käyttövoima (EURO IV)	 Ajoneuvolla käyttövoimakohtaiset tiedot kyselylajista 6xx lukien (EURO VI tiedot)	Fuel (EURO IV)	
+kunta	enum		101	1	Kunta	Ajoneuvon todennäköisin käyttökunta 	Kunta	Ajoneuvon todennäköisin käyttökunta 	Municipality	
+Co2	number		67	0	CO2	Ajoneuvon hiilidioksidipäästö (CO2) grammoina.	CO2	Ajoneuvon hiilidioksidipäästö (CO2) grammoina.	CO2	CO2 emissions in grams
+jarnro	number		900	0	Jarj.nro	juokseva numerointi	Jarj.nro	juokseva numerointi	Row number	
+alue	number		100	0	Postinro alkuosa	3 ensimmäistä numeroa postinumerosta	Postinro alkuosa	3 ensimmäistä numeroa postinumerosta	Postal code start	First 3 numbers of the postal code
+matkamittarilukema	number		110	0	Mittarilukema	Viimeisin katsastuksessa todettu matkamittarin lukema 	Mittarilukema	Viimeisin katsastuksessa todettu matkamittarin lukema 	Odometer	
+valmistenumero2	string		26	1	VIN alkuosa	10 ensimmäistä numeroa valmistenumerosta henkilöautoilta.	VIN alkuosa	10 ensimmäistä numeroa valmistenumerosta henkilöautoilta.	VIN Start	First 10 letters of the Vehicle Identification Number
+kayttoonottovuosi	number		30	1	Käyttöönottovuosi	Käyttöönottovuosi	Käyttöönottovuosi	Käyttöönottovuosi	Commission year	Initial commission year
