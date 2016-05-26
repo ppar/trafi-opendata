@@ -19,6 +19,7 @@
     "jquery": "^2.2.4",
     "bootstrap": "^3.3.6",
     "moment": "^2.13.0",
-    "jquery-ui": "^1.11.4"
+    "jquery-ui": "^1.11.4",
+    "jQuery-QueryBuilder": "^2.3.3"
   }
 }

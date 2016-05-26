@@ -15,6 +15,21 @@
     <!-- jQuery -->
     <script type="text/javascript" src="/bc/jquery/dist/jquery.min.js"></script>
 
+    <!--  JQUERY-UI for bs_grid (only sortable and datepicker is needed) -->
+    <link rel="stylesheet" type="text/css" href="/bc/jquery-ui/themes/ui-lightness/jquery-ui.css"/>
+    <script type="text/javascript"          src="/bc/jquery-ui/jquery-ui.min.js"></script>
+    <!--  if timepicker is used in filters -->
+    <!-- link rel="stylesheet" type="text/css" href="/path/to/jquery-ui-timepicker-addon.min.css"/-->
+    <!-- script type="text/javascript" src="/path/to/jquery-ui-timepicker-addon.min.js"></script-->
+    <!--  if touch event support is needed (mobile devices) -->
+    <!-- script type="text/javascript" src="/path/to/jquery.ui.touch-punch.min.js"></script-->
+
+    <!-- For jQuery-QueryBuilder -->
+    <script type="text/javascript" src="/bc/jquery-extendext/jQuery.extendext.min.js"></script>
+
+    <!-- For jQuery-QueryBuilder -->
+    <script type="text/javascript" src="/bc/doT/doT.min.js"></script>
+
     <!-- Bootstrap core CSS -->
     <link href="/bc/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
@@ -23,58 +38,50 @@
     <script src="/bc/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="/js/ie10-viewport-bug-workaround.js"></script>
-
     <!-- Bootstrap debugging -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
     <!-- script src="../../assets/js/ie-emulation-modes-warning.js"></script -->
 
+    <!-- Undescore for Visualsearch -->
+    <!--script type="text/javascript"          src="/bc/underscore/underscore-min.js"></script-->
 
-    <!--  JQUERY-UI (only sortable and datepicker is needed) -->
-    <link rel="stylesheet" type="text/css" href="/bc/jquery-ui/themes/ui-lightness/jquery-ui.css"/>
-    <script type="text/javascript"          src="/bc/jquery-ui/jquery-ui.min.js"></script>
+    <!-- Backbone for Visualsearch -->
+    <!--script type="text/javascript"          src="/bc/backbone/backbone-min.js"></script-->
 
-    <!--  if timepicker is used in filters -->
-    <!-- link rel="stylesheet" type="text/css" href="/path/to/jquery-ui-timepicker-addon.min.css"/-->
-    <!-- script type="text/javascript" src="/path/to/jquery-ui-timepicker-addon.min.js"></script-->
-    <!--  if touch event support is needed (mobile devices) -->
-    <!-- script type="text/javascript" src="/path/to/jquery.ui.touch-punch.min.js"></script-->
-
-    <!--  PAGINATION plugin -->
-    <link rel="stylesheet" type="text/css" href="/bs_pagination/jquery.bs_pagination.min.css"/>
-    <script type="text/javascript"          src="/bs_pagination/jquery.bs_pagination.min.js"></script>
-    <script type="text/javascript"          src="/bs_pagination/localization/en.min.js"></script>
+    <!--  bs_pagination plugin for bs_grid -->
+    <link rel="stylesheet" type="text/css" href="/ext/bs_pagination/jquery.bs_pagination.min.css"/>
+    <script type="text/javascript"          src="/ext/bs_pagination/jquery.bs_pagination.min.js"></script>
+    <script type="text/javascript"          src="/ext/bs_pagination/localization/en.min.js"></script>
     
-    <!--  FILTERS plugin --> 
-    <link rel="stylesheet" type="text/css" href="/jui_filter_rules/minified/jquery.jui_filter_rules.bs.min.css"/>
-    <script type="text/javascript"          src="/jui_filter_rules/minified/jquery.jui_filter_rules.min.js"></script>
-    <script type="text/javascript"          src="/jui_filter_rules/minified/localization/en.min.js"></script>
+    <!-- jui_filters plugin for bs_grid (TODO: remove dependecy) --> 
+    <link rel="stylesheet" type="text/css" href="/ext/jui_filter_rules/minified/jquery.jui_filter_rules.bs.min.css"/>
+    <script type="text/javascript"          src="/ext/jui_filter_rules/minified/jquery.jui_filter_rules.min.js"></script>
+    <script type="text/javascript"          src="/ext/jui_filter_rules/minified/localization/en.min.js"></script>
 
-    <!--  required from filters plugin -->
+    <!-- moment for jui_filters (TODO: remove depedendency) and jQuery QueryBuilder -->
     <script type="text/javascript" src="/bc/moment/min/moment.min.js"></script>
     
-    <!--  DATAGRID plugin -->
-    <link rel="stylesheet" type="text/css" href="/bs_grid/minified/jquery.bs_grid.min.css"/>
-    <script type="text/javascript"          src="/bs_grid/jquery.bs_grid.js"></script>
-    <script type="text/javascript"          src="/bs_grid/minified/localization/en.min.js"></script>
+    <!-- bs_grid plugin -->
+    <link rel="stylesheet" type="text/css" href="/ext/bs_grid/minified/jquery.bs_grid.min.css"/>
+    <script type="text/javascript"          src="/ext/bs_grid/jquery.bs_grid.js"></script>
+    <script type="text/javascript"          src="/ext/bs_grid/minified/localization/en.min.js"></script>
 
-    <!-- testing dynatable -->
-    <!-- link rel="stylesheet" media="all" href="/bc/dynatable/jquery.dynatable.css" / -->
-    <!-- script type="text/javascript" src="/bc/dynatable/jquery.dynatable.js"></script -->
-  
-    <!-- jQuery Bootgrid -->
-    <!-- link href="/bc/jquery.bootgrid/dist/jquery.bootgrid.css"/ -->
-    <!-- script src="/bc/jquery.bootgrid/dist/jquery.bootgrid.js"></script -->
+    <!-- Visualsearch plugin -->
+    <!--script type="text/javascript" src="visualsearch/visualsearch.js" ></script>
+    <link href="visualsearch/visualsearch-datauri.css" media="screen" rel="stylesheet" type="text/css" /-->
+
+    <!-- jQuery-QueryBuilder -->
+    <link rel="stylesheet" type="text/css" href="/bc/jQuery-QueryBuilder/dist/css/query-builder.default.min.css"/>
+    <script type="text/javascript"          src="/bc/jQuery-QueryBuilder/dist/js/query-builder.min.js"></script>
+
 
     <!-- Local CSS and JS -->
     <link rel="stylesheet" href="/css/navbar.css"/>
     <link rel="stylesheet" href="/css/style.css"/>
     <script type="text/javascript" src="/js/demo.js"></script>
-
-    
   </head>
 
   <body>
-
     <!-- container -->
     <div class="container">
 
@@ -127,14 +134,9 @@
       </div -->
       
       <!-- Content -->
-      <!--  data-toggle="bootgrid" data-ajax="true" data-url="/api/v1.0/vehicles/list"  
-           -->
-      <!-- table id="vehicle_table"  class="table table-condensed table-hover table-striped">
-        <thead>
-          <tr>
-          </tr>
-        </thead>
-      </table -->
+
+
+      <div id="search_ui"></div>
       <div id="vehicle_table"></div>
 
     </div> <!-- /container -->

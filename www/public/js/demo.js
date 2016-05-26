@@ -1,52 +1,123 @@
-jQuery(document).ready(function(){
 
-    fields =  ['ajoneuvoluokka' ,
-                  'ensirekisterointipvm',
-                  'ajoneuvoryhma',
-                  'ajoneuvonkaytto',
-                  'variantti',
-                  'versio',
-                  'kayttoonottopvm',
-                  'vari',
-                  'ovienLukumaara',
-                  'korityyppi',
-                  'ohjaamotyyppi',
-                  'istumapaikkojenLkm',
-                  'omamassa',
-                  'teknSuurSallKokmassa',
-                  'tieliikSuurSallKokmassa',
-                  'ajonKokPituus',
-                  'ajonLeveys',
-                  'ajonKorkeus',
-                  'kayttovoima',
-                  'iskutilavuus',
-                  'suurinNettoteho',
-                  'sylintereidenLkm',
-                  'ahdin',
-                  'sahkohybridi',
-                  'merkkiSelvakielinen',
-                  'mallimerkinta',
-                  'vaihteisto',
-                  'vaihteidenLkm',
-                  'kaupallinenNimi',
-                  'voimanvalJaTehostamistapa',
-                  'tyyppihyvaksyntanro',
-                  'yksittaisKayttovoima',
-                  'kunta',
-                  'Co2',
-                  'matkamittarilukema',
-                  'alue',
-                  'valmistenumero2',
-                  'jarnro' 
-                ];
+/*
+ * FIXME: Organize this using CommonJS, a civilized async system and/or some MVC
+ *
+ */
 
-    //
-    for(i in fields){
-        jQuery('#vehicle_table thead tr').append('<th data-column-id="' + fields[i] + '">' + fields[i] + '</th>');
+window.vehicleSearch = {};
 
+/*
+ * Map enum columns' keys to their values in given language
+ */
+window.vehicleSearch.translateEnum = function(columnName, key, language){
+    // Not found (nor does it belong in) metadata, don't translate
+    if(columnName == '_id'){
+        return key;
     }
 
-    //
+    // Pass through empty values and non-enum variables
+    if(window.vehicleSearch.metadata.vehicles.columns[columnName].type != 'enum'){
+        return key;
+    }
+    if(key === null || key == ''){
+        return key;
+    }
+
+    if(window.vehicleSearch.metadata.vehicles.columns[columnName]['enumByKey'][key]){
+        return window.vehicleSearch.metadata.vehicles.columns[columnName]['enumByKey'][key].name[language];
+    }
+
+    // Unknown
+    //return columnName + ':' + key;
+    return key;
+};
+
+
+/*
+ * Return the vehicle with all enum values mapped
+ */
+window.vehicleSearch.translateVehicle = function(vehicle, language){
+    var result = {};
+    for(prop in vehicle){
+        result[prop] = window.vehicleSearch.translateEnum(prop, vehicle[prop], language);
+    }
+    return result;
+}
+
+/*
+ * Map column names to their human-readable labels in given language
+ */
+window.vehicleSearch.translateColumnName = function(columnName, language){
+    if(columnName == '_id'){
+        return '_id';
+    }
+    return window.vehicleSearch.metadata.vehicles.columns[columnName].name[language];
+};
+
+
+/*
+ * Load metadata from the server and process it.
+ */
+window.vehicleSearch.initMetadata = function(callback){
+    // Load columns.json
+    jQuery.ajax('/js/columns.json', {
+        dataType: 'json',
+        success: function(data){
+
+            window.vehicleSearch.columns = data.sort(function(a, b){
+                if(a.presentationOrder > b.presentationOrder){ return 1; }
+                if(a.presentationOrder < b.presentationOrder){ return -1; }
+                return 0;
+            });
+
+            // Load metadata
+            jQuery.ajax('/js/metadata.json', {
+                dataType: 'json',
+                success: function(data){
+                    window.vehicleSearch.metadata = data;
+                    
+                    // Index the enum values for faster & easier lookups
+                    for(col in window.vehicleSearch.metadata.vehicles.columns){
+                        if(window.vehicleSearch.metadata.vehicles.columns[col].type == 'enum'){
+                            var list = window.vehicleSearch.metadata.vehicles.columns[col]['enum'];
+                            var dict = {};
+                            for(i in list){
+                                dict[list[i].key] = list[i];
+                            }
+                            window.vehicleSearch.metadata.vehicles.columns[col]['enumByKey'] = dict;
+                        }
+                    }
+
+                    //
+                    callback();
+                }
+            });
+        }
+    });
+};
+
+
+/*
+ * Initialize the search UI
+ */
+window.vehicleSearch.initSearch = function(callback){
+/**
+    jQuery('#search_ui').queryBuilder({
+        filters: {
+
+        }
+    });
+**/
+
+    callback();
+};
+
+
+/*
+ * Initialize the bs_grid datagrid view
+ */
+window.vehicleSearch.initGrid = function(callback){
+
     var bsGridOptions = {
         ajaxFetchDataURL: "/api/v1.0/vehicles/listPaged",
         ajaxMethod: "GET",
@@ -65,7 +136,13 @@ jQuery(document).ready(function(){
             response.error = null;
             response.debug_message = [];
             response.filter_error = [];
-            return response; 
+
+            for(row in response.page_data){
+                response.page_data[row] =
+                    window.vehicleSearch.translateVehicle(response.page_data[row], 'en');
+            }
+
+            return response;
         },
 
         row_primary_key: "_id",
@@ -74,7 +151,9 @@ jQuery(document).ready(function(){
         rowSelectionMode: false,
         showSortingIndicator: true,
         showSortingMenuButton: false,
-        useSortableLists: false
+        useSortableLists: false,
+        
+        columns: []
 
         /***
         sorting: [
@@ -87,172 +166,32 @@ jQuery(document).ready(function(){
 
     };
  
-    bsGridOptions.columns = [];
-    for(i in fields){
-        var visible = false;
-        switch(fields[i]){
-            case 'merkkiSelvakielinen':
-            case 'ajoneuvoryhma':
-            case 'kunta':
-            case 'ensirekisterointipvm':
-            case 'mallimerkinta':
-            visible = 'yes';
-            ;;
-        }
+    // Define the list of columns
+    // FIXME: list of visible columns should be a model and generate events
+    for(c in window.vehicleSearch.columns){
+        var col = window.vehicleSearch.columns[c];
+
         bsGridOptions.columns.push({
-            field: fields[i],
-            header: fields[i],
-            visible: visible
+            field: col.columnName,
+            header: window.vehicleSearch.translateColumnName(col.columnName, 'en'),
+            // It only takes 'yes' for an answer...
+            visible: (col.defaultVisibility ? 'yes' : false)
         });
     }
 
+    //
     jQuery("#vehicle_table").bs_grid(bsGridOptions);
+
+    callback();
+};
+
+/*
+ *
+ */
+jQuery(document).ready(function(){
+    window.vehicleSearch.initMetadata(function(){
+        window.vehicleSearch.initSearch(function(){
+            window.vehicleSearch.initGrid(function() {} );
+        });
+    });
 });
-
-
-
-
-/******************
-    jQuery("#vehicle_table").bootgrid({
-
-        // selection: false,
-        // rowSelect: false,
-        search: false,
-
-        ajax: true,
-        ajaxSettings: {
-            method: 'GET'
-        },
-
-        url: '/api/v1.0/vehicles/listPaged',
-
-        requestHandler: function(origReq){
-            console.log('requestHandler: request:');
-            console.log(origReq);
-            
-            var newReq = {
-                page: origReq.current,
-                limit: origReq.rowCount,
-
-                // sort[col]
-                // searchPhrase
-                
-                resultParamPage: 'current',
-                resultParamLimit: 'rowCount',
-                resultParamDocs: 'rows',
-                resultParamTotal: 'total'
-            };
-
-            return newReq;
-        },
-
-        responseHandler: function(response){
-            console.log('responseHandler: response:');
-            console.log(response);
-            delete response.pages;
-
-            return response;
-        },
-
-        formatters: {
-            "link": function(column, row)
-            {
-            return "<a href=\"#\">" + column.id + ": " + row.id + "</a>";
-            }
-        }
-    });
-    
-
-******************/
-
-
-/*****************
-
-
-    /*});
-      jQuery(document).ready(function(){
-    */
-    
-    // Map Dynatable's JSON parameter names to the JSON format returned
-    // by our API, i.e. the format returned by 'mongoose-paginate'
-    /**
-    jQuery.dynatableSetup({
-        features: {
-            search: false
-        },
-        
-        table: {
-        },
-
-        params: {
-            // No idea
-            //dynatable: 'dynatable',
-
-            // Name (prefix) of HTTP GET parameter issued by Dynatable when
-            // retrieving a page of data from the server.
-            // queries[search]=fuu+bar
-            //queries: 'queries',
-
-            // Name (prefix) of HTTP GET parameter issued by Dynatable when
-            // retrieving a page of data from the server. Specifies the names 
-            // of columns by which the data should be sorted. Format is an 
-            // array like:
-            //    sorts = { mysortcol: '1', anothersortcol: '1' }
-            // serialized into a set of GET parameters:
-            //    sorts[mysortcol] = '1'
-            //    sorts[anothersortcol] = '1'
-            // sorts: 'sorts'
-
-            ////////////////////////
-
-            // Name of HTTP GET parameter issued by Dynatable when retrieving a
-            // page of data from the server. Specifies the page number the
-            // server should return. Pages are numbered from 1.
-            // It seems impossible to prevent dynatable from sending this parameter.
-            page: 'options.page',
-            
-            // Name of HTTP GET parameter issued by Dynatable when retrieving a
-            // page of data from the server. Specifies the number of results
-            // the server should return per page.
-            perPage: 'options.limit',
-
-            // Name of HTTP GET parameter issued by Dynatable when retrieving a
-            // page of data from the server. Specifies the offset ( = number of
-            // result rows to skip). Equals ( [page_number - 1] * [page_size]).
-            // It seems impossible to prevent dynatable from sending this parameter.
-            offset: 'options.offset',
-
-            ////////////////////////
-            
-            // Name of property in the JSON response returned by the server. This
-            // property contains the result rows as an array of JSON objects.
-            records: 'docs',
-            
-            // Name of property in the JSON response returned by the server. This
-            // property contains the total number of result rows in the database for
-            // this query (after filtering, if any).
-            queryRecordCount: 'total',
-
-            // Name of property in the JSON response returned by the server. This
-            // property contains the total number of rows in the database (without
-            // any filtering applied). Set to null if the server doesn't return this.
-            totalRecordCount: null
-            
-        }
-        
-
-    });
-
-    // Call dynatable
-    jQuery('#vehicle_table').dynatable({
-        dataset: {
-            ajax: true,
-            ajaxUrl: '/api/v1.0/vehicles/list',
-            ajaxOnLoad: true,
-            records: []
-        }
-    });
-
-    **********************/
-    
-
