@@ -67,6 +67,18 @@ enumDescFiles = {
     'kunta':           open(sys.argv[9], encoding='utf-8')    
 }
 
+# ENUM values missing from Trafi's data definition....
+knownMartians =  {
+    'kunta': {'180', '841'},
+    'ajoneuvoryhma': {
+        '904', '925', '511', '502', '50', '504', '501', '907', '919', '929', '900', '902',
+        '508', '521', '519', '922', '512', '503', '26', '506', '906', '903', '909', '901',
+        '916', '914', '509', '133', '61', '908', '905', '517', '518', '507', '505', '510',
+        '513', '520', '514', '921', '932'
+    },
+    'korityyppi': { 'SM', 'SL', '5.1', '3.1', '4.4', '2.1', '5.9', 'SK' }
+}
+
 # Use OrderedDict to make the output human-readable. No code
 # assumes the dict is ordered, however.
 #metadata = OrderedDict()
@@ -152,26 +164,37 @@ for line in columnDescFile:
                         'en': prefix + b[3]
                     }
                 })
-                
-        # This one is missing from Ficora's data
-        if colName == 'ajoneuvoluokka':
-            metadata['vehicles']['columns'][colName]['enum'].append({
-                'key': 'MUU',
-                'name': {
-                    'fi': 'MUU',
-                    'sv': 'MUU',
-                    'en': '(Other)'
-                },
-                'desc': {
-                    'fi': 'MUU - Muu luokka',
-                    'sv': 'MUU - Muu luokka',
-                    'en': 'MUU - Other Class'
-                }
-            })
 
     # Add sibling <colName>_UPPER field for string columns
     if colType == 'string':
         metadata['vehicles']['columns'][colName + '_UPPER'] = metadata['vehicles']['columns'][colName]
+
+
+# Missing from Ficora's data
+metadata['vehicles']['columns']['ajoneuvoluokka']['enum'].append({
+    'key': 'MUU',
+    'name': {
+        'fi': 'MUU',
+        'sv': 'MUU',
+        'en': '(Other)'
+    },
+    'desc': {
+        'fi': 'MUU - Muu luokka',
+        'sv': 'MUU - Muu luokka',
+        'en': 'MUU - Other Class'
+    }
+})
+
+for colName in knownMartians:
+    for martianVal in knownMartians[colName]:
+        metadata['vehicles']['columns'][colName]['enum'].append({
+            'key': martianVal,
+            'name': {
+                'en': martianVal,
+                'fi': martianVal,
+                'sv': martianVal
+            }
+        })
 
 # All done
 print(json.dumps(metadata, indent=4))
