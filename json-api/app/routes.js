@@ -1,106 +1,47 @@
-console.log('routes.js: starting');
+// == Modules ================================
+var express            = require('express');
+var validator          = require('validator');
+var async              = require('async');
 
-// == Modules ==================
-var express = require('express');
-var validator = require('validator');
-var async = require('async');
-//var mongoosePaginate = require('mongoose-paginate');
+var vehicleSchema      = null;
+var vehicleProjection  = null;
+var metadata           = null;
 
-//var logger = require('../logger');
-//var security = require('../config/security');
+// == Initialization  ========================
+exports.initialize = function(_metadata){
+    metadata = _metadata;
 
-// == Schema  ==================
-// TODO: correct data types
-function _getVehicleSchema(){
-    var fields = ['ajoneuvoluokka',
-                  'ensirekisterointipvm',
-                  'ajoneuvoryhma',
-                  'ajoneuvonkaytto',
-                  'variantti',
-                  'versio',
-                  'kayttoonottopvm',
-                  'vari',
-                  'ovienLukumaara',
-                  'korityyppi',
-                  'ohjaamotyyppi',
-                  'istumapaikkojenLkm',
-                  'omamassa',
-                  'teknSuurSallKokmassa',
-                  'tieliikSuurSallKokmassa',
-                  'ajonKokPituus',
-                  'ajonLeveys',
-                  'ajonKorkeus',
-                  'kayttovoima',
-                  'iskutilavuus',
-                  'suurinNettoteho',
-                  'sylintereidenLkm',
-                  'ahdin',
-                  'sahkohybridi',
-                  'merkkiSelvakielinen',
-                  'mallimerkinta',
-                  'vaihteisto',
-                  'vaihteidenLkm',
-                  'kaupallinenNimi',
-                  'voimanvalJaTehostamistapa',
-                  'tyyppihyvaksyntanro',
-                  'yksittaisKayttovoima',
-                  'kunta',
-                  'Co2',
-                  'matkamittarilukema',
-                  'alue',
-                  'valmistenumero2',
-                  'jarnro'];
+    var typeMap = {
+        'enum': 'String',
+        'string': 'String',
+        'number': 'Number',
+        'bool': 'Boolean',
+        'date': 'Date'
+    };
 
-    var schema = {};
-    for (f in fields){
-        schema[fields[f]] = { type: String, trim: true };
+    // Create schema and projection for Mongoose.
+    // Hide <colName>_UPPER fields from query results.
+    vehicleSchema = {};
+    vehicleProjection = {};
+    for(var colName in metadata.vehicles.columns){
+        vehicleSchema[colName] = typeMap[metadata.vehicles.columns[colName].type];
+        
+        if(!colName.endsWith('_UPPER')){
+            vehicleProjection[colName] = 1;
+        }
     }
-
-    console.log('_getSchema():');
-    console.log(schema);
-
-    return schema;
 };
 
-
-/*****
-  { 
-         active: Boolean,
-         email: { type: String, trim: true, lowercase: true },
-         firstName: { type: String, trim: true },
-         created: { type: Date, default: Date.now },
-         subs: { type: [mongoose.Schema.Types.ObjectId], default: [] },
-  }
-
-  {
-         description: { type: String, trim:true },
-         title: { type: String, trim:true },
-         summary: { type: String, trim:true },
-         state: { type: String, trim:true, lowercase:true, default: 'new' },
-
-         created: { type: Date, default: Date.now },
-         feedID: { type: mongoose.Schema.Types.ObjectId },
-  }
-******/
-
-
-// == Initialize ===========================
-
+// == API handler ============================
 exports.addAPIRouter = function(app, mongoose, mongoosePaginate) {
     //
     var router = express.Router();
 
     // ----------------------------------------------
     // Create schemas and models
-    console.log('creating vehicleSchema');
-    var vehicleSchema = new mongoose.Schema(_getVehicleSchema(), { collection: 'vehicles' } );
+    var vehicleSchema = new mongoose.Schema(vehicleSchema, { collection: 'vehicles' } );
     vehicleSchema.plugin(mongoosePaginate);
-    
-    //vehicleSchema.index({email : 1}, {unique:true});
-    //vehicleSchema.index({sp_api_key_id : 1}, {unique:true});
-    //userFeedEntrySchema.index({userID : 1, feedID : 1, feedEntryID : 1, read : 1});
- 
-    console.log('creating vehicleModel');
+
     var VehicleModel = mongoose.model('Vehicle', vehicleSchema);
 
     // ----------------------------------------------
@@ -134,13 +75,15 @@ exports.addAPIRouter = function(app, mongoose, mongoosePaginate) {
     router.get('/', function(req, res){
         res.json({ message: 'API 1.0 operational' });
     });
-    
+        
     // ----------------------------------------------
     // List all vehicles, paged
     // 
     // GET parameters:
     //    page:               Number of page to return (default 1)
     //    limit:              Number of items per page (default 10)
+    //    find:               Search parameters as a JSON-serialized MongoDB "find" object
+    //                        (default {} -- return all records}
     //
     //    resultParamDocs:    Override the name of the 'docs'  property in the response JSON
     //    resultParamTotal:   Override the name of the 'total' property in the response JSON
@@ -169,11 +112,30 @@ exports.addAPIRouter = function(app, mongoose, mongoosePaginate) {
     //  }
     //
     router.get('/vehicles/listPaged', function(req, res) {
+        console.log('== GET /vehicles/listPaged ===============================');
+        console.log('HTTP query params:');
+        console.log(req.query);
+
+        // Result variables
+        var resultStatus = null;
+        var resultJSON = {};
+        var errStr = null;
+        
+        // Query filter for MongoDB's .find() method
+        var filterParams = {};
+        if(req.query.find){
+            filterParams = JSON.parse(req.query.find);
+        }
+        
+        // Options for mongoose-paginate plugin
+        // Includes projection parameter for .find()
         var paginateOptions = {
             page: req.query.page   || 1,
-            limit: req.query.limit || 10
+            limit: req.query.limit || 10,
+            select: vehicleProjection
         };
 
+        // Names of properties used in the JSON response. 
         var resultParams = {
             'docs':   req.query.resultParamDocs  || 'docs',
             'total':  req.query.resultParamTotal || 'total',
@@ -182,32 +144,15 @@ exports.addAPIRouter = function(app, mongoose, mongoosePaginate) {
             'pages':  req.query.resultParamPages || 'pages'
         };
 
-        delete req.query.pageNumber;
-        delete req.query.pageSize;
-
-        delete req.query.resultParamDocs;
-        delete req.query.resultParamTotal;
-        delete req.query.resultParamLimit;
-        delete req.query.resultParamPage;
-        delete req.query.resultParamPages;
-
-        //var filterParams = req.query;
-        var filterParams = {};
-        
-        console.log('filterParams:');
-        console.log(filterParams);
-        
-        var resultStatus = null;
-        var resultJSON = {};
-        var errStr = null;
-        //var state = {};
-
+        // Define query logic
         var tasks = [
-            function findVehicles(cb){
-                console.log('Querying MongoDB');
+            function findVehicles(callback){
+                console.log('Mongoose filterParams:');
+                console.log(filterParams);
+                console.log('Mongoose paginateOptions:');
+                console.log(paginateOptions);
+
                 VehicleModel.paginate(filterParams, paginateOptions, function(err, mongoResult){
-                    console.log('Got response');
-                    // 500
                     if(err){
                         errStr = 'Error querying MongoDB';
                         resultStatus = 500;
@@ -218,67 +163,67 @@ exports.addAPIRouter = function(app, mongoose, mongoosePaginate) {
                         return;
                     }
 
-                    console.log('Success, result size: ' + mongoResult.length);
+                    console.log('Mongoose result:');
+                    console.log(mongoResult);
 
                     resultStatus = 200;
-                    
                     for(pn in resultParams){
                         resultJSON[resultParams[pn]] = mongoResult[pn];
                     }
 
-                    cb(null);
+                    callback(null);
                 });
             }
         ];
 
+        // Perform query and send response
+        // FIXME: async.series() is really overkill here since there's only one function to run.
         async.series(tasks, function finalizer(err, results){
-            console.log('Finalizing request');
             if(null == resultStatus){
                 res.status(200);
             } else {
                 res.status(resultStatus);
             }
+
+            console.log('Result Status: ' + resultStatus);
+            console.log('Result JSON:');
+            console.log(resultJSON);
+
             res.json(resultJSON);
-            console.log('resultJSON set');
+            console.log('------------------------------------------------------------------');
         });
         
         
     });
 
     // ----------------------------------------------
-    // Search
-    router.get('/vehicles/search', function(req, res) {
-        console.log('GET /vehicles/search');
+    // Get a list of distinct values for a given column.
+    //
+    router.get('/vehicles/propertyDistinct/:colName', function(req, res) {        
+        // Check that the column exists, otherwise MongoDB will just seek through all records.
+        // Could probably ask this from the Mongoose model/schema too
+        if(! metadata.vehicles.columns[req.params.colName]){
+            res.status(404);
+            res.json({ 'message': 'Error: column not found' });
+            return;
+        }
 
-        var resultStatus = null;
-        var resultJSON = null;
-        var errStr = null;
-        //var state = {};
-
-        var tasks = [
-            function findVehicles(cb){
-                // FIXME: Passing req.query directly to .find() might not be safe,
-                // also, should do substring matches & other operators
-                VehicleModel.find(req.query, function(err, docs){
-                    assert.equal(null, err);
-                    //assert.equal(10, docs.length);
-                    resultJSON.vehicles = docs;
-                });
-                cb(null);
+        // Do it
+        VehicleModel.distinct(req.params.colName, function(err, docs){
+            if(err){
+                var errStr = 'Error querying MongoDB';
+                resultStatus = 500;
+                resultJSON = { error: errStr };
+                console.log(errStr);
+                console.log(err);
+                return;
             }
-        ];
-
-        async.series(tasks, function finalizer(err, results){
-            if(null == resultStatus){
-                res.status(200);
-            } else {
-                res.status(resultStatus);
-            }
-            res.json(resultJSON);
+            res.status(200);
+            res.json(docs);
         });
-        
-        
     });
+
+
 
     // ----------------------------------------------
     // Statistics - TODO: set long cache time
@@ -352,6 +297,7 @@ exports.addAPIRouter = function(app, mongoose, mongoosePaginate) {
         ];
 
         //
+        // FIXME: async.series() is really overkill here since there's only one function to run.
         async.series(getVehiclePropsTasks, function finalizer(err, results){
             if(null == resultStatus){
                 res.status(200);
