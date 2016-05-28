@@ -10,7 +10,7 @@ window.vehicleSearch = {};
  * Map enum columns' keys to their values in given language
  */
 window.vehicleSearch.translateEnum = function(columnName, key, language){
-    // Not found (nor does it belong in) metadata, don't translate
+    // Not found (nor does it belong) in metadata, don't translate
     if(columnName == '_id'){
         return key;
     }
@@ -70,7 +70,7 @@ window.vehicleSearch.initMetadata = function(callback){
                 return 0;
             });
 
-            // Load metadata
+            // Load metadata.json
             jQuery.ajax('/js/metadata.json', {
                 dataType: 'json',
                 success: function(data){
@@ -87,9 +87,18 @@ window.vehicleSearch.initMetadata = function(callback){
                             window.vehicleSearch.metadata.vehicles.columns[col]['enumByKey'] = dict;
                         }
                     }
+                    
+                    // Load car makes
+                    jQuery.ajax('/api/v1.0/vehicles/propertyDistinct/merkkiSelvakielinen_UPPER', {
+                        dataType: 'json',
+                        success: function(data){
+                            vehicleSearch.distinctProperties = {};
+                            vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER'] = data;
 
-                    //
-                    callback();
+                            //
+                            callback();
+                        }
+                    });
                 }
             });
         }
@@ -98,16 +107,200 @@ window.vehicleSearch.initMetadata = function(callback){
 
 
 /*
+ * Refresh method. Executes the query and updates the result grid.
+ */
+window.vehicleSearch.refresh = function() {
+
+    makeUpperCase = function(obj){
+        for(var i in obj){
+            if(typeof obj[i] == 'string' && i == '$regex'){
+                obj[i] = obj[i].toUpperCase();
+            }
+            if(typeof obj[i] == 'object'){
+                obj[i] = makeUpperCase(obj[i]);
+            }
+        }
+        return obj;
+    };
+
+    // Get the query as a MongoDB query object
+    var qry = jQuery('#search_ui').queryBuilder('getMongo');
+
+    // Turn all text fields into uppercase.
+    window.vehicleSearch.mongoQuery = makeUpperCase(qry);
+
+    // Tell bs_grid to reload the data
+    jQuery('#vehicle_table').bs_grid('displayGrid', true);
+};
+
+
+/*
  * Initialize the search UI
  */
 window.vehicleSearch.initSearch = function(callback){
-/**
-    jQuery('#search_ui').queryBuilder({
-        filters: {
+    var qbOptions = {
+        optgroups: {},
+        filters: [],
+        allow_groups: false,
+        allow_empty: true
+    };
 
+    for(i in window.vehicleSearch.columns){
+        var colName = window.vehicleSearch.columns[i].columnName;
+        var col = window.vehicleSearch.metadata.vehicles.columns[colName];
+
+        var f = {
+            id: colName,
+            // multilingual object
+            label: col.name
+        };
+
+        if(col.unit){ 
+            for(var lang in f.label){
+                f.label[lang] += ' (' + col.unit + ')';
+            }
+        }
+
+        // The "vehicle make" field gets a typeahead helper
+        if(colName == 'merkkiSelvakielinen'){
+            /****
+            f.type = 'string';
+            f.field = 'merkkiSelvakielinen_UPPER';
+            f.operators = [ 'equal' ];
+            f.input = function(rule, inputName){
+                return '<div><input class="form-control typeahead vehiclemake-typeahead" type="text" name="' + inputName + '"></div>';
+            };
+            ******/
+            f = {
+                id: 'merkkiSelvakielinen',
+                field: 'merkkiSelvakielinen_UPPER',
+                label: col.name,
+                type: 'string',
+                plugin: 'selectize',
+                plugin_config: {
+                    valueField: 'id',
+                    labelField: 'name',
+                    searchField: 'name',
+                    sortField: 'name',
+                    create: true,
+                    maxItems: 1,
+                    plugins: ['remove_button'],
+                    options: []
+                },
+                valueSetter: function(rule, value) {
+                    rule.$el.find('.rule-value-container input')[0].selectize.setValue(value);
+                }
+            }
+
+            for(i in window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER']){
+                f.plugin_config.options.push({
+                    id: window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER'][i],
+                    name: window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER'][i]
+                });
+            }
+
+            qbOptions.filters.push(f);
+            continue;
+        }
+            
+        // Generic fields according to data type
+        switch(col.type){
+            case 'bool':
+                // CHECK
+                f.type = 'boolean';
+                f.input = 'radio';
+                f.operators = [ 'equal', 'is_null', 'is_not_null' ];
+                f.values = [true, false];
+            break;
+
+            case 'number':
+                f.type = 'double';
+                f.operators = [ 'equal', 'not_equal', 
+                              'less', 'less_or_equal',
+                              'greater', 'greater_or_equal',
+                              'between', 'not_between',
+                              'is_null', 'is_not_null' ];
+            break;
+
+            case 'string':
+                // String fields have a shadow "colName_UPPER" property
+                // to facilitate using indexes with case-insensitive 
+                // searches. In this UI, all string searches are simply
+                // case insensitive.
+                f.type = 'string';
+                f.field = colName + '_UPPER';
+            break;
+
+            case 'date':
+                // FIXME
+                f.type = 'date';
+            break;
+
+            case 'enum':
+                f.type = 'string';
+                f.input = 'checkbox';
+                f.multiple = 'true';
+                f.operators = [ 'in', 'not_in', 'is_null', 'is_not_null' ];
+
+                // List of possible values for this ENUM field
+                f.values = [];
+                for(j in col['enum']){
+                    var key = col['enum'][j].key;
+                    var label = col['enum'][j].name['en'];
+                    // Prefer longer labels
+                    if(col['enum'][j].desc){
+                        label = col['enum'][j].desc['en'];
+                    }
+
+                    var o = {};
+                    o[key] = label;
+                    f.values.push(o);
+                }
+            break;
+              
+        }
+
+        qbOptions.filters.push(f);
+    }
+
+    // Create the query builder
+    jQuery('#search_ui').queryBuilder(qbOptions);
+
+
+    // Fix for Selectize
+    jQuery('#search_ui').on('afterCreateRuleInput.queryBuilder', function(e, rule) {
+        if (rule.filter.plugin == 'selectize') {
+            rule.$el.find('.rule-value-container').css('min-width', '200px')
+                .find('.selectize-control').removeClass('form-control');
         }
     });
-**/
+
+/**
+
+    // Add typeahead helper to "vehicle make" inputs
+    //jQuery('#search_ui').on('afterCreateRuleInput.queryBuilder', function(e, rule, error, value){
+        jQuery('.vehiclemake-typeahead').typeahead(
+            { 
+                minLength: 1, 
+                highlight: true
+            }, 
+            { 
+                name: 'merkkiSelvakielinen_UPPER',
+                limit: 20,
+                // There's overly complicated and then there's this.
+                source: function(query, callback) {
+                    var matches = [];
+                    var re = new RegExp('^' + query, 'i');
+                    for(i in window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER']){
+                        if (re.test(window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER'][i])) {
+                            matches.push(window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER'][i]);
+                        }
+                    }
+                    callback(matches);
+                }
+            });
+    //});
+***/
 
     callback();
 };
@@ -123,12 +316,22 @@ window.vehicleSearch.initGrid = function(callback){
         ajaxMethod: "GET",
 
         ajaxRequestHandler: function(rq) {
+            // Show progress bar
+            jQuery('#query_progress .progress-bar').show().css('width', '50%').attr('aria-valuenow', 50);
+
+            // Base Query
             var newRequest = {
                 page: rq.page_num,
                 limit: rq.rows_per_page,
                 resultParamDocs: 'page_data',
                 resultParamTotal: 'total_rows'
             };
+
+            // Filter params
+            if(window.vehicleSearch.mongoQuery){
+                newRequest.find = JSON.stringify(window.vehicleSearch.mongoQuery);
+            }
+
             return newRequest;
         },
 
@@ -142,7 +345,14 @@ window.vehicleSearch.initGrid = function(callback){
                     window.vehicleSearch.translateVehicle(response.page_data[row], 'en');
             }
 
+            // 
+            jQuery('#query_progress .progress-bar').css('width', '100%').attr('aria-valuenow', 100).hide();
             return response;
+        },
+
+        ajaxErrorHandler: function(jqXHR, textStatus, errorThrown) {
+            alert('API call failed: ' + textStatus + ': ' + errorThrown);
+            
         },
 
         row_primary_key: "_id",
@@ -191,7 +401,11 @@ window.vehicleSearch.initGrid = function(callback){
 jQuery(document).ready(function(){
     window.vehicleSearch.initMetadata(function(){
         window.vehicleSearch.initSearch(function(){
-            window.vehicleSearch.initGrid(function() {} );
+            window.vehicleSearch.initGrid(function() {
+                jQuery('#execute_search').on('click', function(){
+                    window.vehicleSearch.refresh();
+                });
+            });
         });
     });
 });

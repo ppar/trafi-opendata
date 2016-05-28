@@ -1,197 +1,197 @@
 [
     {
-        "columnName": "ajoneuvoluokka",
         "defaultVisibility": true,
+        "columnName": "ajoneuvoluokka",
         "presentationOrder": 10
     },
     {
-        "columnName": "ensirekisterointipvm",
         "defaultVisibility": false,
+        "columnName": "ensirekisterointipvm",
         "presentationOrder": 32
     },
     {
-        "columnName": "ajoneuvoryhma",
         "defaultVisibility": false,
+        "columnName": "ajoneuvoryhma",
         "presentationOrder": 11
     },
     {
-        "columnName": "ajoneuvonkaytto",
         "defaultVisibility": false,
+        "columnName": "ajoneuvonkaytto",
         "presentationOrder": 40
     },
     {
-        "columnName": "kayttoonottopvm",
         "defaultVisibility": false,
+        "columnName": "kayttoonottopvm",
         "presentationOrder": 31
     },
     {
-        "columnName": "vari",
         "defaultVisibility": true,
+        "columnName": "vari",
         "presentationOrder": 94
     },
     {
-        "columnName": "ovienLukumaara",
         "defaultVisibility": false,
+        "columnName": "ovienLukumaara",
         "presentationOrder": 93
     },
     {
-        "columnName": "korityyppi",
         "defaultVisibility": true,
+        "columnName": "korityyppi",
         "presentationOrder": 90
     },
     {
-        "columnName": "ohjaamotyyppi",
         "defaultVisibility": false,
+        "columnName": "ohjaamotyyppi",
         "presentationOrder": 91
     },
     {
-        "columnName": "istumapaikkojenLkm",
         "defaultVisibility": false,
+        "columnName": "istumapaikkojenLkm",
         "presentationOrder": 92
     },
     {
-        "columnName": "omamassa",
         "defaultVisibility": false,
+        "columnName": "omamassa",
         "presentationOrder": 50
     },
     {
-        "columnName": "teknSuurSallKokmassa",
         "defaultVisibility": false,
+        "columnName": "teknSuurSallKokmassa",
         "presentationOrder": 51
     },
     {
-        "columnName": "tieliikSuurSallKokmassa",
         "defaultVisibility": false,
+        "columnName": "tieliikSuurSallKokmassa",
         "presentationOrder": 52
     },
     {
-        "columnName": "ajonKokPituus",
         "defaultVisibility": false,
+        "columnName": "ajonKokPituus",
         "presentationOrder": 53
     },
     {
-        "columnName": "ajonLeveys",
         "defaultVisibility": false,
+        "columnName": "ajonLeveys",
         "presentationOrder": 54
     },
     {
-        "columnName": "ajonKorkeus",
         "defaultVisibility": false,
+        "columnName": "ajonKorkeus",
         "presentationOrder": 55
     },
     {
-        "columnName": "kayttovoima",
         "defaultVisibility": true,
+        "columnName": "kayttovoima",
         "presentationOrder": 60
     },
     {
-        "columnName": "iskutilavuus",
         "defaultVisibility": true,
+        "columnName": "iskutilavuus",
         "presentationOrder": 62
     },
     {
-        "columnName": "suurinNettoteho",
         "defaultVisibility": false,
+        "columnName": "suurinNettoteho",
         "presentationOrder": 63
     },
     {
-        "columnName": "sylintereidenLkm",
         "defaultVisibility": false,
+        "columnName": "sylintereidenLkm",
         "presentationOrder": 64
     },
     {
-        "columnName": "ahdin",
         "defaultVisibility": false,
+        "columnName": "ahdin",
         "presentationOrder": 65
     },
     {
-        "columnName": "sahkohybridi",
         "defaultVisibility": false,
+        "columnName": "sahkohybridi",
         "presentationOrder": 66
     },
     {
-        "columnName": "merkkiSelvakielinen",
         "defaultVisibility": true,
+        "columnName": "merkkiSelvakielinen",
         "presentationOrder": 20
     },
     {
-        "columnName": "mallimerkinta",
         "defaultVisibility": false,
+        "columnName": "mallimerkinta",
         "presentationOrder": 22
     },
     {
-        "columnName": "vaihteisto",
         "defaultVisibility": false,
+        "columnName": "vaihteisto",
         "presentationOrder": 70
     },
     {
-        "columnName": "vaihteidenLkm",
         "defaultVisibility": false,
+        "columnName": "vaihteidenLkm",
         "presentationOrder": 71
     },
     {
-        "columnName": "kaupallinenNimi",
         "defaultVisibility": true,
+        "columnName": "kaupallinenNimi",
         "presentationOrder": 21
     },
     {
-        "columnName": "voimanvalJaTehostamistapa",
         "defaultVisibility": false,
+        "columnName": "voimanvalJaTehostamistapa",
         "presentationOrder": 80
     },
     {
-        "columnName": "tyyppihyvaksyntanro",
         "defaultVisibility": false,
+        "columnName": "tyyppihyvaksyntanro",
         "presentationOrder": 23
     },
     {
-        "columnName": "variantti",
         "defaultVisibility": false,
+        "columnName": "variantti",
         "presentationOrder": 24
     },
     {
-        "columnName": "versio",
         "defaultVisibility": false,
+        "columnName": "versio",
         "presentationOrder": 25
     },
     {
-        "columnName": "yksittaisKayttovoima",
         "defaultVisibility": false,
+        "columnName": "yksittaisKayttovoima",
         "presentationOrder": 61
     },
     {
-        "columnName": "kunta",
         "defaultVisibility": true,
+        "columnName": "kunta",
         "presentationOrder": 101
     },
     {
-        "columnName": "Co2",
         "defaultVisibility": false,
+        "columnName": "Co2",
         "presentationOrder": 67
     },
     {
-        "columnName": "jarnro",
         "defaultVisibility": false,
+        "columnName": "jarnro",
         "presentationOrder": 900
     },
     {
-        "columnName": "alue",
         "defaultVisibility": false,
+        "columnName": "alue",
         "presentationOrder": 100
     },
     {
-        "columnName": "matkamittarilukema",
         "defaultVisibility": false,
+        "columnName": "matkamittarilukema",
         "presentationOrder": 110
     },
     {
-        "columnName": "valmistenumero2",
         "defaultVisibility": true,
+        "columnName": "valmistenumero2",
         "presentationOrder": 26
     },
     {
-        "columnName": "kayttoonottovuosi",
         "defaultVisibility": true,
+        "columnName": "kayttoonottovuosi",
         "presentationOrder": 30
     }
 ]
