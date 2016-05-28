@@ -1,0 +1,48 @@
+01	Bensiini	Bensin	Petrol
+02	Dieselöljy	Dieselolja	Diesel fuel
+03	Polttoöljy	Brännolja	Oil
+04	Sähkö	Elektricitet	Electricity
+05	Vety	Hydrogen	Hydrogen
+06	Kaasu	Gas	Gas
+07	Metanoli	Metanol	Methanol
+10	Biodiesel	Biodiesel	Biodiesel fuel
+11	LPG	LPG	LPG
+13	CNG	CNG	CNG
+31	Moottoripetroli	Motorfotogen	Light fuel oil (kerosene)
+32	Diesel/Puu	Diesel/Trä	Diesel/wood
+33	Bensiini/Puu	Bensin/Trä	Petrol/wood
+34	Bensiini + moottoripetroli	Bensin + motorfotogen	Petrol + light fuel oil (kerosene)
+37	Etanoli	Etanol	Ethanol
+38	Bensiini/CNG	Bensin/CNG	Petrol/CNG
+39	Bensiini/Sähkö	Bensin/Elektricitet	Petrol/Electricity
+40	Bensiini/Etanoli	Bensin/Etanol	Petrol/Ethanol
+41	Bensiini/Metanoli	Bensin/Metanol	Petrol/Methanol
+42	Bensiini/LPG	Bensin/LPG	Petrol/LPG
+43	Diesel/CNG	Diesel/CNG	Diesel fuel / CNG
+44	Diesel/Sähkö	Diesel/Elektricitet	Diesel fuel / Electricity
+45	Diesel/Etanoli	Diesel/Etanol	Diesel fuel / Ethanol
+46	Diesel/Metanoli	Diesel/Metanol	Diesel fuel / Methanol
+47	Diesel/LPG	Diesel/LPG	Diesel fuel / LPG
+48	Diesel/Biodiesel	Diesel/Biodiesel	Diesel fuel / Biodiesel fuel
+49	Diesel/Biodiesel/Sähkö	Diesel/Biodiesel/Elektricitet	Diesel fuel / Biodiesel fuel / Electricity
+50	Diesel/Biodiesel/Etanoli	Diesel/Biodiesel/Etanol	Diesel fuel / Biodiesel fuel / Ethanol
+51	Diesel/Biodiesel/Metanoli	Diesel/Biodiesel/Metanol	Diesel fuel / Biodiesel fuel / Methanol
+52	Diesel/Biodiesel/LPG	Diesel/Biodiesel/LPG	Diesel fuel / Biodiesel fuel / LPG
+53	Diesel/Biodiesel/CNG	Diesel/Biodiesel/CNG	Diesel fuel / Biodiesel fuel / CNG
+54	Vety/Sähkö	Hydrogen/Elektricitet	Hydrogen/Electricity
+55	Dieselöljy/Muu	Dieselolja/Övrig	Diesel fuel / Other
+56	H-ryhmän maakaasu	Naturgastyp H	Natural gas type H
+57	L-ryhmän maakaasu	Naturgastyp L	Natural gas type L
+58	HL-ryhmän maakaasu	Naturgastyp HL	Natural gas type HL
+59	CNG/Biometaani	CNG/Biometan	Natural gas / Biomethane
+60	Biometaani	Biometan	Biomethane
+61	Puu	Träd	Wood
+62	Etanoli (ED95)	Etanol (ED95)	Ethanol (ED95)
+63	Etanoli (E85)	Etanol (E85)	Ethanol (E85)
+64	Vety-maakaasuseos	H2NG-blandning	H2NG
+65	LNG	LNG	LNG
+66	LNG20	LNG20	LNG20
+67	Diesel/LNG	Diesel/LNG	Diesel/LNG
+68	Diesel/LNG20	Diesel/LNG20	Diesel/LNG20
+X	Ei sovellettavissa	Ej tillämplig	Not applicable
+Y	Muu	Övrig	Other

@@ -1,0 +1,4 @@
+1	Umpiohjaamo	Sluten förarhytt	Closed cab
+2	Suojakehys	Skyddsram	Protective frame
+3	Jatko-ohjaamo	Förlängd förarhytt	Extended cab
+4	Avo-ohjaamo	Öppen förarhytt	Open cab

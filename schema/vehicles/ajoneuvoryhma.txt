@@ -1,0 +1,128 @@
+1	Kevyt tavarankuljetusperävaunu	Lätt varutransport släpvagn	Light goods trailer
+10	Ajoneuvonkuljetusperävaunu, kokm > 750kg	Fordontransportsläpvagn, totm > 750kg	Vehicle transport trailer, total mass >750 kg
+100	Ruohonleikkuukone	Gräsklippningsmaskin	Lawnmower
+101	Jäänhoitokone	Isskötselmaskin	Ice resurfacer
+102	Konttinosturi	Containerlyftkran	Container crane
+103	Betonisekoitin	Betongblandare	Concrete mixer
+104	Monitoimikone	Mångsysslomaskin	Harvester
+105	Lumiaura-harjapuhallin	Plog-sopblåsmaskin	Snow plough/blower
+106	Moottorireki	Motorsläde	Snowmobile
+107	Moottorikelkka	Snöskoter	Ski-doo
+108	Kevyt moottoripyörä	Lätt motorcykel	Light motorcycle
+109	2-pyöräinen	Tvåhjuling	Motor bicycle
+110	3-pyöräinen	Trehjuling	Motor tricycle
+111	2-pyöräinen tavarapyörä	Tvåhjulig varucykell	Cargo bicycle
+112	3-pyöräinen tavarapyörä	Trehjulig varucykel	Cargo tricycle
+113	Invalidipyörä	Invalidcykel	Disabled moped
+114	Sivuvaunumoottoripyörä	Motorcykel med sidvagn	Motorcycle with sidecar
+115	Kevyt nelipyörä	Lätt fyrhjuling	Light quadricycle
+116	Nelipyörä	Fyrhjuling	Quadricycle
+117	Varsinaisen perävaunun vetoajoneuvo	Dragbil för egentlig släpvagn	Towing vehicle for drawbar trailer
+118	Puoliperävaunun vetoauto	Dragbil för påhängsvagn	Towing vehicle for semi trailer
+119	Keskiakseliperävaunun vetoauto	Dragbil för medelaxelsläpvagn	Towing vehicle for centre-axle trailer
+12	Varsinainen perävaunu, (ka)	Egentlig släpvagn, (lb)	Drawbar trailer
+120	Auton alustalle rakennettu työkone	Motorredskap som byggts på bilunderrede	Machinery mounted on a vehicle chassis
+121	Alusta	Chassis	Chassis
+122	Matkatyöperävaunu	Researbetssläpvagn	Work caravan
+123	Betoninkuljetusauto	Betongtransportbil	Concrete transport lorry
+124	Jätteenkuljetusauto	Sopbil	Refuse transport lorry
+125	Koneenkuljetusauto	Maskintransportbil	Machinery transport lorry
+126	Nelipyöräinen	Fyrhjuling	Quadricycle
+127	Hihnakuljetinauto	Remtransportörbil	Conveyor belt lorry
+128	Rinnekone	Pistmaskin	Piste machine
+129	Hitsausauto	Svetsningsbil	Welding vehicle
+13	Keskiakseliperävaunu	Släpvagn med centralaxel	Centre-axle trailer
+130	Kaapelikelan kuljetusperävaunu	Kabeltrummasläpvagn	Cable drum trailer
+131	Esteetön taksiauto	Tillgänglig taxibil	Accessible taxi
+132	Hinattava laite	Släpanordning	Towed machinery
+14	Puoliperävaunu	Påhängsvagn	Semi-trailer
+15	Erikoiskuljetusperävaunu	Specialtransportsläpvagn	Exceptional load transport trailer
+16	Erikoiskuljetuspuoliperävaunu	Specialtransportpåhängsvagn	Exceptional load transport semi-trailer
+17	Varsinainen säiliöperävaunu	Egentlig tanksläpvagn	Drawbar tanker trailer
+18	Säiliöpuoliperävaunu	Tankpåhängsvagn	Tanker semi-trailer
+19	Dolly	Dolly	Dolly
+2	Kevyt veneenkuljetusperävaunu	Lätt båttrailer	Light boat trailer
+20	Kevytperävaunu	Lätt släpvagn	Light trailer
+21	Museoajoneuvo	Museifordon	Historic vintage vehicle
+22	Myymäläauto	Butikbil	Shopmobile
+23	Nosturiauto	Kranbil	Crane lorry
+24	Invataksi	Invataxi	Disabled taxi
+25	Säiliöauto	Tankbil	Tanker truck
+27	Nosturiauton alusta	Kranbils chassi	Crane lorry chassis
+28	Hevosenkuljetusauto	Hästtransportbil	Horse lorry
+29	Matkailuauto	Campingbil	Motor caravan
+3	Kevyt telttaperävaunu	Lätt tältsläpvagn	Light tent trailer
+30	Eläintenkuljetusauto	Djurtransportbil	Animal transport vehicle
+31	Rikka-auto	Avskrädebil	Vacuum cleaner vehicle
+32	Pelastusauto	Räddningsbil	Rescue vehicle
+33	Sairasauto	Ambulans	Ambulance
+34	Poliisiajoneuvo	Polisfordon	Police vehicle
+35	Pienoislinja-auto	Minibus	Minibus
+36	Betonipumppuauto	Betongpumpsbil	Concrete pump truck
+37	Nivellinja-auto	Ledad buss	Articulated bus
+38	Nivellinja-auto (kaksikerroksinen)	Ledad tvåvåningsbuss	Articulated bus (double-deck)
+39	Linja-auto (kaksikerroksinen)	Tvåvåningsbuss	Bus/coach (double-deck)
+4	Kevyt moottoripyöränkuljetusperävaunu	Lätt motorcykeltransportsläpvagn	Light motorcycle trailer
+40	Alaluokka I (M2/M3)	Klass I (M2/M3)	Class I (M2/M3)
+41	Alaluokka II (M2/M3)	Klass II (M2/M3)	Class II (M2/M3)
+42	Alaluokka III (M2/M3)	Klass III (M2/M3)	Class III (M2/M3)
+43	Alaluokka A	Klass A	Class A
+44	Alaluokka B	Klass B	Class B
+45	Alaluokka I (matalalattialinja-auto)	Klass I (låggolvsbuss)	Class I (low-floor bus)
+46	Alaluokka II (matalalattialinja-auto)	Klass II (låggolvsbuss)	Class II (low-floor bus)
+47	Alaluokka A (matalalattialinja-auto)	Klass A (låggolvsbuss)	Class III (low-floor bus)
+48	Ruumisauto	Likbil	Hearse
+49	Maastoauto	Terrängbil	Off-road car
+5	Kevyt lentokoneenkuljetusperävaunu	Lätt transportsläpvagn för flygplan	Light aircraft trailer
+51	Nosturiauto	Kranbil	Crane lorry
+52	Lakaisuauto	Sopningsbil	Street sweeper
+53	Hinausauto	Bogserbil	Tow truck
+54	Kaivukoneauto	Grävmaskinsbil	Digger lorry
+55	Porausauto	Borrningsbil	Drilling lorry
+56	Huoltoauto	Servicebil	Service vehicle
+57	Lumilinko	Snöslunga	Snow blower
+58	Pankkiauto	Bankbil	Security van
+59	Viemärin/putkiston korjausauto	Kloaks/rörnätetsrepareringsbil	Sewer/pipe repair vehicle
+6	Tavarankuljetusperävaunu, kokm > 750kg	Varutransportsläpvagn, tom > 750 kg	Goods trailer, total mass >750 kg
+60	Rehulaitosauto	Foderinrättningsbil	Animal feed transport vehicle
+62	Nostokoriauto	Bil med lyftkorg	Vehicle with lifting cage
+63	Imuauto	Sugningsbil	Suction unit vehicle
+64	Polyuretaanin ruiskutusauto	Sprutbil för polyuretan	Polyurethane injection vehicle
+65	Näyttelyauto	Utställningsbil	Exhibition vehicle
+66	Mittausauto	Mätningsbil	Measuring vehicle
+67	TV/radioauto	TV/radiobil	TV/radio vehicle
+68	Eläinlääkintäauto	Veterinärbil	Veterinarian vehicle
+69	Kahden toiminnan erikoisauto	Specialbil med två funktioner	Twin-function special vehicle
+7	Veneenkuljetusperävaunu, kokm > 750kg	Båttrailer, totm > 750 kg	Boat trailer, total mass >750 kg
+70	Kirjastoauto	Biblioteksbil	Mobile library
+71	Kaksikäyttöauto	Bil avsedd för två ändamål	Dual-purpose vehicle
+72	Alaluokka I (N1)	Klass I (N1)	Class I (N1)
+73	Alaluokka II (N1)	Klass II (N1)	Class II (N1)
+74	Alaluokka III (N1)	Klass III (N1)	Class III (N1)
+75	Maataloustraktori	Lantbrukstraktor	Agricultural tractor
+76	Puutarhatraktori	Trädgårdstraktor	Horticultural tractor
+77	Maansiirtotraktori	Jordtransporttraktor	Earth-moving tractor
+78	Metsätraktori	Skogstraktor	Forestry tractor
+79	Teollisuustraktori	Industritraktor	Industrial tractor
+8	Hevosenkuljetusperävaunu, kokm > 750kg	Hästtransportsläpvagn, totm > 750 kg	Horse box, total mass >750 kg
+80	Kiinteistötraktori	Fastighetstraktor	Property maintenance tractor
+81	Liikennetraktori	Trafiktraktor	Tractor registered for road use
+82	Haarukkanosturi	Gaffeltruck	Forklift truck
+83	Sivuhaarukkanosturi	Sidogaffeltruck	Side loading forklift truck
+84	Puomihaarukkanosturi	Bomgaffeltruck	Forklift truck with crane boom
+85	Kauhakuormain	Skoplastare	Shovel loader
+86	Kourakuormain	Griplastare	Grapple crane
+87	Kaivukone	Grävmaskin	Excavator
+88	Puominosturi	Bomlyftkran	Boom crane
+89	Kauhakuormain-kaivukone	Skoplastare-grävmaskin	Shovel loader excavator
+9	Matkailuperävaunu	Campingsläpvagn	Caravan
+90	Puomikauhakuormain	Bomskoplastare	Telehandler excavator
+91	(monitoimi)metsäkone	(mångssysslo) skogsmaskin	Harvester, forest harvester
+92	Haketuskone	Flisningsmaskin	Wood chipper
+93	Vetotrukki	Dragtruck	Towing tractor
+94	Lumilinko	Snöslunga	Snow blower
+95	Hajasääritrukki	Grensletruck	Straddle carrier
+96	Kuljetusalusta	Transportchassi	Transport platform
+97	Lakaisukone	Sopningsmaskin	Street sweeper
+98	Hiekanlevitin	Sandspridare	Sander
+99	Linjanrakennuskone	Linjebyggnadsmaskin	Pipelayer

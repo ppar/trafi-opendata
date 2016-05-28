@@ -1,0 +1,13 @@
+0	Musta	Svart	Black
+1	Ruskea (beige)	Brun (beige)	Brown (beige)
+2	Punainen	Röd	Red
+3	Oranssi	Orange	Orange
+4	Keltainen	Gul	Yellow
+5	Vihreä	Grön	Green
+6	Sininen	Blå	Blue
+7	Violetti	Violett	Violet
+8	Harmaa	Grå	Grey
+9	Valkoinen	Vit	White
+X	Monivär.	Flerfärg	Multi-coloured
+Y	Hopea	Silver	Silver
+Z	Turkoosi	Turkos	Turquoise

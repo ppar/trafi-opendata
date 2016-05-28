@@ -1,14 +1,11 @@
 #!/usr/bin/python3
 
 #
-# Imports a raw CSV file from trafi.fi into a MongoDB collection
+# Imports a raw CSV file from trafi.fi 
 #
-# NOTE: Importing the ~800 MB set of vehicle data will grow your 
-#       /var/lib/mongodb by about 8 GB. On a 2010, 2.4 GHz Core i5 it
-#       will take about 75 min.
 #
-# USAGE: csv2mongodb.py <source.csv> <metadata.json> <dbname> <collectionname>
-#        csv2mongodb.py rawdata/4.5/unzipped/AvoinData\ 4.5.csv metadata.json trafi_opendata vehicles
+# USAGE: csv.py <source.csv> <metadata.json> 
+#        csv.py rawdata/4.5/unzipped/AvoinData\ 4.5.csv metadata.json trafi_opendata vehicles
 
 from __future__ import print_function
 import sys
@@ -21,6 +18,56 @@ from pymongo import MongoClient
 
 debug = False
 
+                        if 'kayttoonottopvm' == colName
+                    # Special case, can be YYYYMMDD or YYYY0000
+                    # Always store commission year (kayttoonottovuosi)
+                    # Only store commission date (kayttoonottopvm) if MMDD != 0000
+                    dataType = None
+                    dataFormat = None
+                    year, month, day = val[0:4], val[4:6], val[6:8]
+                    normRecord['kayttoonottovuosi'] = int(year)
+                    
+                    if month == '00' or day == '00':
+                        continue
+                    
+                    val = year + '-' + month + '-' + day
+                    dataType = 'date'
+                        
+
+def getCreateTableVehicles(metadata):
+
+    sql = 'CREATE TABLE vehicles id NOT NULL AUTO_INCREMENT, '
+    
+    for colName in metadata.vehicles.columns:
+        dataType = metadata['vehicles']['columns'][colName]['type']
+
+        sql += colName + ' ' + dataType
+        
+        if 'date' == dataType:
+                    
+                elif 'number' == dataType:
+                    try:
+                        normRecord[key] = int(val)
+                    except ValueError:
+                        # Nasty
+                        normRecord[key] = float(val.replace(',', '.'))
+                    
+                elif 'bool' == dataType:
+                    normRecord[key] = (True == val or 'true' == val.lower())
+
+                elif 'string' == dataType:
+                    normRecord[key] = val
+                    # Add sibling <colName>_UPPER field for string columns
+                    normRecord[key + '_UPPER'] = val.upper()
+                    
+                elif 'enum' == dataType:
+                    normRecord[key] = val
+                    
+                else:
+                    # enums and strings
+                    normRecord[key] = val
+
+        
 #           
 def main(argv):
     csvFileName = argv[1]
@@ -97,6 +144,14 @@ def main(argv):
                     
                 elif 'bool' == dataType:
                     normRecord[key] = (True == val or 'true' == val.lower())
+
+                elif 'string' == dataType:
+                    normRecord[key] = val
+                    # Add sibling <colName>_UPPER field for string columns
+                    normRecord[key + '_UPPER'] = val.upper()
+                    
+                elif 'enum' == dataType:
+                    normRecord[key] = val
                     
                 else:
                     # enums and strings

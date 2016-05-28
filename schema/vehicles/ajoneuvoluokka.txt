@@ -1,0 +1,55 @@
+C1	Traktori	Telaketjutraktori, v <= 40 km/h, m > 600 kg, maavara <= 1000 mm	Traktor	Bandtraktor, v <= 40 km/h, m > 600 kg, markfria gång <= 1000 mm	Tractor	Tractor
+C2	Traktori	Telaketjutraktori, v <= 40 km/h, m > 600 kg, maavara <= 600 mm	Traktor	Bandtraktor, v <= 40 km/h, m > 600 kg, markfria gång <= 600 mm	Tractor	Tractor
+C3	Traktori	Telaketjutraktori, v <= 40 km/h, m <= 600 kg	Traktor	Bandtraktor, v <= 40 km/h, m <= 600 kg	Tractor	Tractor
+C4	Traktori	Erityiskäyttöön tarkoitettu telaketjutraktori, v <= 40 km/h	Traktor	Bandtraktor konstruerad för ett särskilt ändamål, v <= 40 km/h	Tractor	Tractor
+C5	Traktori	Telaketjutraktori, v > 40 km/h	Traktor	Bandtraktor, v > 40 km/h	Tractor	Tractor
+KNP	Kevyt nelipyörä	Nelipyöräinen ajoneuvo, m (kuormittamaton) <= 350 kg, v <= 45 km/h, Vi <= 50 cm3	Lätt fyrhjuling	Fyrhjuligt fordon, m (olastad) <= 350 kg, v <= 45 km/h, Vi <= 50 cm3	Light quadricycle	Light quadricycle
+L1	Mopo	Kaksipyöräinen ajoneuvo, Vi <= 50 cm3, v <= 45 km/h	Moped	Tvåhjuligt fordon, Vi <= 50 cm3, v <= 45 km/h	Moped	Moped
+L1e	Mopo	Kaksipyöräinen ajoneuvo, v <= 45 km/h, Vi <= 50 cm3	Moped	Tvåhjuligt fordon, v <= 45 km/h, Vi <= 50 cm3	Moped	Moped
+L2	Mopo	Kolmipyöräinen ajoneuvo, Vi <= 50 cm3, v <= 45 km/h	Moped	Trehjuligt fordon, Vi <= 50 cm3, v <= 45 km/h	Moped	Moped
+L2e	Mopo	Kolmipyöräinen ajoneuvo, v <= 45 km/h, Vi <= 50 cm3	Moped	Trehjuligt fordon, v <= 45 km/h, Vi <= 50 cm3	Moped	Moped
+L3	Moottoripyörä	Kaksipyöräinen moottoripyörä, Vi > 50 cm3 ja/tai v > 45 km/h,	Motorcykel	Tvåhjuligt fordon, Vi > 50 cm3 och/eller v > 45 km/h,	Motorcycle	Motorcycle
+L3e	Moottoripyörä	Kaksipyöräinen ajoneuvo, Vi > 50 cm3 ja/tai v > 45 km/h,	Motorcykel	Tvåhjuligt fordon, Vi > 50 cm3 och/eller v > 45 km/h	Motorcycle	Motorcycle
+L4	Moottoripyörä	Kaksipyöräinen, sivuvaunullinen moottoripyörä, Vi > 50 cm3 ja/tai v > 45 km/h	Motorcykel	Tvåhjuligt fordon med sidvagn, Vi > 50 cm3 ja/tai v > 45 km/h	Motorcycle	Motorcycle
+L4e	Moottoripyörä	Kaksipyöräinen, sivuvaunullinen moottoripyörä, Vi > 50 cm3 ja/tai v > 45 km/h	Motorcykel	Tvåhjuligt fordon med sidvagn, Vi > 50 cm3 och/eller v > 45 km/h	Motorcycle	Motorcycle
+L5	Kolmi- tai nelipyörä	Kolmipyöräinen ajoneuvo, Vi > 50 cm3, v > 45 km/h, pyörät symmetrisesti keskiakselin suhteen, m <= 1000 kg TAI nelipyöräinen ajoneuvo, Vi > 50 cm3, v > 45 km/h, m (kuormittamaton) < 400 kg tai m (kuormittamaton) < 550 kg tavarankuljetuskäytössä, P <= 15 kW	Tre- eller fyrhjuling	Trehjuligt fordon, Vi > 50 cm3, v > 45 km/h, hjul är symmetriskt placerade i förhållande till fordonets mittaxel, m <= 1000 kg ELLER ett fyrhjuligt fordon, Vi > 50 cm3, v > 45 km/h, m (olastad) < 400 kg tai m (olastad) < 550 kg, när avsett för godstranspor P <= 15 kW	Motor tricycle or quadricycle	Motor tricycle or quadricycle
+L5e	Kolmipyörä	Kolmipyörä, Vi > 50 cm3, v > 45 km/h	Trehjuling	Trehjuligt fordon, Vi > 50 cm3, v > 45 km/h	Motor tricycle	Motor tricycle
+L6e	Kevyt nelipyörä	Kevyt nelipyörä, m <= 350 kg (kuormittamaton), v <= 45 km/h	Lätt fyrhjuling	Fyrhjuligt fordon, m <= 350 kg (olastad), v <= 45 km/h	Light quadricycle	Light quadricycle
+L7e	Nelipyörä	Nelipyörä, m <= 400 kg (kuormittamaton), P <= 15 kW	Fyrhjuling	Fyrhjuligt fordon, m <= 400 kg (olastad), P <= 15 kW	Quadricycle	Quadricycle
+LTR	Liikennetraktori	Tavarankuljetukseen tarkoitettu kuormaa kantava nestepainetoimisella runko-ohjauksella varustettu traktori, v <= 50 km/h.	Trafiktraktor	En lastbärande traktor med hydraulisk ledramstyrning som är avsedd för godstransport, v <= 50 km/h.	Tractor registered for road use	Tractor registered for road use
+M1	Henkilöauto	Matkustajien kuljettamiseen valmistettu ajoneuvo, tilaa kuljettajan lisäksi enintään kahdeksalle matkustajalle	Personbil	Ett för persontransport tillverkat fordon med plats för högst åtta personer utöver föraren	Car	Car
+M1G	Henkilöauto	Matkustajien kuljettamiseen valmistettu maastoauto, tilaa kuljettajan lisäksi enintään kahdeksalle matkustajalle	Personbil	En för persontransport tillverkad terrängbil med plats för högst åtta personer utöver föraren	Car	Car
+M2	Linja-auto	Matkustajien kuljettamiseen valmistettu ajoneuvo, tilaa kuljettajan lisäksi yli kahdeksalle matkustajalle, m <= 5000 kg	Buss	Ett för persontransport tillverkat fordon med plats för fler än åtta personer utöver föraren, m <= 5000 kg	Bus/coach	Bus/coach
+M2G	Linja-auto	Matkustajien kuljettamiseen valmistettu maastoauto, tilaa kuljettajan lisäksi yli kahdeksalle matkustajalle, m <= 5000 kg	Buss	En för persontransport tillverkad terrängbil med plats för fler än åtta personer utöver föraren, m <= 5000 kg	Bus/coach	Bus/coach
+M3	Linja-auto	Matkustajien kuljettamiseen tarkoitettu ajoneuvo, tilaa kuljettajan lisäksi yli kahdeksalle matkustajalle, m > 5000 kg	Buss	Ett för persontransport tillverkat fordon med plats för fler än åtta personer utöver föraren, m > 5000 kg	Bus/coach	Bus/coach
+M3G	Linja-auto	Matkustajien kuljettamiseen valmistettu maastoauto, tilaa kuljettajan lisäksi yli kahdeksalle matkustajalle, m > 5000 kg	Buss	En för persontransport tillverkad terrängbil med plats för fler än åtta personer utöver föraren, m > 5000 kg	Bus/coach	Bus/coach
+MA	Maastoajoneuvo	Henkilöiden tai tavaran kuljetukseen tarkoitettu jäällä, lumessa tai vajottavassa maastossa tai maahan tukeutuen kulkemaan valmistettu moottorikäyttöinen ajoneuvo	Terrängfordon	Fordon tillverkat för person- eller godstransport eller för dragning av andra fordon på is, i snö eller på sank mark eller för färd med marken som stöd	All-terrain vehicle	All-terrain vehicle
+MTK	Moottorityökone	Työkoneeksi valmistettu tai varustettava ajoneuvo, v <= 40 km/h; tienpitoon tarkoitettu muu moottorikäyttöinen ajoneuvo kuin auto; vetotrukki, v <= 50 km/h	Motorredskap	Fordon som tillverkats eller är avsett att utrustas som arbetsmaskin, v <= 40 km/h; ett för väghållningsarbete tillverkat annat motordrivet fordon än en bil; en dragtruck, v <= 50 km/h	Public works vehicle	Public works vehicle
+N1	Pakettiauto	Tavaroiden kuljettamiseen valmistettu ajoneuvo, m <= 3500 kg	Paketbil	Ett för godstransport tillverkat fordon, m <= 3500 kg	Van	Van
+N1G	Pakettiauto	Tavaroiden kuljettamiseen valmistettu maastoauto, m <= 3500 kg	Paketbil	En för godstransport tillverkad terrängbil, m <= 3500 kg	Van	Van
+N2	Kuorma-auto	Tavaroiden kuljettamiseen valmistettu ajoneuvo, 3500 < m <= 12000 kg	Lastbil	Ett för godstransport tillverkat fordon, 3500 < m <= 12000 kg	Lorry	Lorry
+N2G	Kuorma-auto	Tavaroiden kuljettamiseen valmistettu maastoauto, 3500 < m <= 12000 kg	Lastbil	En för godstransport tillverkad terrängbil, 3500 < m <= 12000 kg	Lorry	Lorry
+N3	Kuorma-auto	Tavaroiden kuljettamiseen valmistettu ajoneuvo, m > 12000 kg	Lastbil	Ett för godstransport tillverkat fordon, m > 12000 kg	Lorry	Lorry
+N3G	Kuorma-auto	Tavaroiden kuljettamiseen valmistettu maastoauto, m > 12000 kg	Lastbil	En för godstransport tillverkad terrängbil, m > 12000 kg	Lorry	Lorry
+O1	Kevyt perävaunu	Perävaunu, m <= 750 kg	Lätt släpvagn	Släpvagn, m <= 750 kg	Light trailer	Light trailer
+O2	Perävaunu	Perävaunu, 750 < m <= 3500 kg	Släpvagn	Släpvagn, 750 < m <= 3500 kg	Trailer	Trailer
+O3	Perävaunu	Perävaunu, 3500 < m <= 10000 kg	Släpvagn	Släpvagn, 3500 < m <= 10000 kg	Trailer	Trailer
+O4	Perävaunu	Perävaunu, m > 10000 kg	Släpvagn	Släpvagn, m > 10000 kg	Trailer	Trailer
+Ra1	Traktorin perävaunu	Traktorin perävaunu, m <= 1500 kg, v <= 40 km/h	Traktorsläpvagn	Traktorsläpvagn, m <= 1500 kg, v <= 40 km/h	Tractor trailer	Tractor trailer
+Ra2	Traktorin perävaunu	Traktorin perävaunu, 1500 < m <= 3500 kg, v <= 40 km/h	Traktorsläpvagn	Traktorsläpvagn, 1500 < m <= 3500 kg, v <= 40 km/h	Tractor trailer	Tractor trailer
+Ra3	Traktorin perävaunu	Traktorin perävaunu, 3500 < m <= 21000 kg, v <= 40 km/h	Traktorsläpvagn	Traktorsläpvagn, 3500 < m <= 21000 kg, v <= 40 km/h	Tractor trailer	Tractor trailer
+Ra4	Traktorin perävaunu	Traktorin perävaunu, m > 21000 kg, v <= 40 km/h	Traktorsläpvagn	Traktorsläpvagn, m > 21000 kg, v <= 40 km/h	Tractor trailer	Tractor trailer
+Rb1	Traktorin perävaunu	Traktorin perävaunu, m <= 1500 kg, v > 40 km/h	Traktorsläpvagn	Traktorsläpvagn, m <= 1500 kg, v > 40 km/h	Tractor trailer	Tractor trailer
+Rb2	Traktorin perävaunu	Traktorin perävaunu, 1500 < m <= 3500 kg, v > 40 km/h	Traktorsläpvagn	Traktorsläpvagn, 1500 < m <= 3500 kg, v > 40 km/h	Tractor trailer	Tractor trailer
+Rb3	Traktorin perävaunu	Traktorin perävaunu, 3500 < m <= 21000 kg, v > 40 km/h	Traktorsläpvagn	Traktorsläpvagn, 3500 < m <= 21000 kg, v > 40 km/h	Tractor trailer	Tractor trailer
+Rb4	Traktorin perävaunu	Traktorin perävaunu, m > 21000 kg, v > 40 km/h	Traktorsläpvagn	Traktorsläpvagn, m > 21000 kg, v > 40 km/h	Tractor trailer	Tractor trailer
+Sa1	Vedettävä kone	Vedettävä vaihdettavissa oleva kone, m <= 3500 kg, v <= 40 km/h	Dragen maskin	Utbytbar dragen maskin, m <= 3500 kg, v <= 40 km/h	Towed machinery	Towed machinery
+Sa2	Vedettävä kone	Vedettävä vaihdettavissa oleva kone, m > 3500 kg, v <= 40 km/h	Dragen maskin	Utbytbar dragen maskin, m > 3500 kg, v <= 40 km/h	Towed machinery	Towed machinery
+Sb1	Vedettävä kone	Vedettävä vaihdettavissa oleva kone, m <= 3500 kg, v > 40 km/h	Dragen maskin	Utbytbar dragen maskin, m <= 3500 kg, v > 40 km/h	Towed machinery	Towed machinery
+Sb2	Vedettävä kone	Vedettävä vaihdettavissa oleva kone, m > 3500 kg, v > 40 km/h	Dragen maskin	Utbytbar dragen maskin, m > 3500 kg, v > 40 km/h	Towed machinery	Towed machinery
+T	Traktori	Pyörin tai teloin varustettu ajoneuvo; valmistettu vetämään, työntämään, käyttämään tai kuljettamaan maa- ja metsätalouden työvälineitä tai työntämään maa- ja metsätalouden ajoneuvoja, v <= 40 km/h	Traktor	Ett fordon med hjul eller band; tillverkats för att dra, skjuta, använda eller transportera för jord- och skogsbruk avsedda arbetsredskap eller för att dra eller skjuta fordon som används för jord- och skogsbruk, v <= 40 km/h.	Tractor	Tractor
+T1	Traktori	Pyörillä varustettu traktori, v <= 40 km/h, m > 600 kg, maavara <= 1000 mm	Traktor	Hjultraktor, v <= 40 km/h, m > 600 kg, markfria gång <= 1000 mm	Tractor	Tractor
+T2	Traktori	Pyörillä varustettu traktori, v < 40 km/h, m > 600 kg, maavara < 600 mm	Traktor	Hjultraktor, v <= 40 km/h, m > 600 kg, markfria gång <= 600 mm	Tractor	Tractor
+T3	Traktori	Pyörillä varustettu traktori, v <= 40 km/h, m <= 600 kg	Traktor	Hjultraktor, v <= 40 km/h, m <= 600 kg	Tractor	Tractor
+T4	Traktori	Erityiskäyttöön tarkoitettu pyörillä varustettu traktori, v <= 40 km/h	Traktor	Hjultraktor konstruerad för ett särskilt ändamål, v <= 40 km/h	Tractor	Tractor
+T5	Traktori	Pyörillä varustettu traktori, v > 40 km/h			Tractor	Tractor

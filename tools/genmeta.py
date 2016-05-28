@@ -52,12 +52,11 @@ from collections import OrderedDict
 # (export LC_CTYPE="en_US.utf8" will take care of this too)
 #sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 
-# Open files
-fp = {
-    # Descriptions of all CSV columns
-    'columndesc':      open(sys.argv[1], encoding='utf-8'),
+# Descriptions of all CSV columns
+columnDescFile = open(sys.argv[1], encoding='utf-8')
 
-    # Values for ENUM columns:
+# Values for ENUM columns
+enumDescFiles = {
     'ajoneuvoluokka':  open(sys.argv[2], encoding='utf-8'),
     'ajoneuvoryhma':   open(sys.argv[3], encoding='utf-8'),
     'ajoneuvonkaytto': open(sys.argv[4], encoding='utf-8'),
@@ -70,25 +69,32 @@ fp = {
 
 # Use OrderedDict to make the output human-readable. No code
 # assumes the dict is ordered, however.
-metadata = OrderedDict()
-metadata['vehicles'] = OrderedDict()
-metadata['vehicles']['updated'] = ''
-metadata['vehicles']['columns'] = OrderedDict()
+#metadata = OrderedDict()
+#metadata['vehicles'] = OrderedDict()
+#metadata['vehicles']['updated'] = ''
+#metadata['vehicles']['columns'] = OrderedDict()
 
+metadata = {
+    'vehicles': {
+        'updated': '',
+        'columns': {}
+    }
+}
+    
 # Read in descriptions of CSV columns
-for line in fp['columndesc']:
+for line in columnDescFile:
     a = line.rstrip("\n").split("\t")
 
-    colname = a[0]
-
+    colName = a[0]
     colType = a[1]
     colUnit = a[2]
 
     # Not used in API metadata, only UI
     #colPresentationOrder = a[3]
     #colDefaultVisibility = a[4]
-        
-    metadata['vehicles']['columns'][colname] = {
+
+    # Create base entry
+    metadata['vehicles']['columns'][colName] = {
         'name': {
             'fi': a[5],
             'sv': a[7],
@@ -101,28 +107,29 @@ for line in fp['columndesc']:
         }, 
         'type': colType        
     }
-
-    if colType != 'ENUM' and colUnit != '':
-        metadata['vehicles']['columns'][colname]['unit'] = colUnit
+    
+    # Add unit field for applicable columns
+    if colUnit != '':
+        metadata['vehicles']['columns'][colName]['unit'] = colUnit
 
     # Insert ENUM values
-    if colname in fp:
-        metadata['vehicles']['columns'][colname]['type'] = 'enum'
-        metadata['vehicles']['columns'][colname]['enum'] = []
+    if colName in enumDescFiles:
+        metadata['vehicles']['columns'][colName]['type'] = 'enum'
+        metadata['vehicles']['columns'][colName]['enum'] = []
         
-        for enumLine in fp[colname]:
+        for enumLine in enumDescFiles[colName]:
             # It would be nice to use the enum value (b[0]) as key here,
             # but some of the values contain dots, which is not allowed
             # in MongoDB's BSON keys, so we'll just store it in 'key'
             b = enumLine.rstrip("\n").split("\t")
 
-            if colname == 'ajoneuvoluokka':
+            if colName == 'ajoneuvoluokka':
                 prefix = b[0] + ' '
             else:
                 prefix = ''
 
-            if colname == 'ajoneuvoluokka' or colname == 'ajoneuvonkaytto':
-                metadata['vehicles']['columns'][colname]['enum'].append({
+            if colName == 'ajoneuvoluokka' or colName == 'ajoneuvonkaytto':
+                metadata['vehicles']['columns'][colName]['enum'].append({
                     'key': b[0],
                     'name': {
                         'fi': prefix + b[1],
@@ -137,7 +144,7 @@ for line in fp['columndesc']:
                 })
                 
             else:
-                metadata['vehicles']['columns'][colname]['enum'].append({
+                metadata['vehicles']['columns'][colName]['enum'].append({
                     'key': b[0],
                     'name': {
                         'fi': prefix + b[1],
@@ -146,9 +153,9 @@ for line in fp['columndesc']:
                     }
                 })
                 
-        # Justified Anciets of MUUMUU
-        if colname == 'ajoneuvoluokka':
-            metadata['vehicles']['columns'][colname]['enum'].append({
+        # This one is missing from Ficora's data
+        if colName == 'ajoneuvoluokka':
+            metadata['vehicles']['columns'][colName]['enum'].append({
                 'key': 'MUU',
                 'name': {
                     'fi': 'MUU',
@@ -161,6 +168,10 @@ for line in fp['columndesc']:
                     'en': 'MUU - Other Class'
                 }
             })
+
+    # Add sibling <colName>_UPPER field for string columns
+    if colType == 'string':
+        metadata['vehicles']['columns'][colName + '_UPPER'] = metadata['vehicles']['columns'][colName]
 
 # All done
 print(json.dumps(metadata, indent=4))

@@ -1,0 +1,5 @@
+01	Yksityinen	Yksityinen (LTJ = 1)	Privat	Privat	Private	Private
+02	Luvanvarainen	Luvanvarainen (LTJ = 2)	Tillståndspliktig	Tillståndspliktig	Subject to permit	Subject to permit
+03	Kouluajoneuvo	Kouluajoneuvo (LTJ = 3)	Skolfordon	Skolfordon	School vehicle	School vehicle
+04	Vuokraus ilman kuljettajaa	Vuokraus ilman kuljettajaa (LTJ = 4)	Uthyrning utan förare	Uthyrning utan förare	Rental without driver	Rental without driver
+05	Myyntivarasto	Myyntivarasto (varastovakuutus) (LTJ = 5)	Försäljningslager (lagerförsäkring)	Försäljningslager (lagerförsäkring)	Sales storage	Sales storage
