@@ -1,4 +1,3 @@
-
 /*
  * FIXME: Organize this using CommonJS, a civilized async system and/or some MVC
  *
@@ -10,7 +9,7 @@ window.vehicleSearch = {};
  * Map enum columns' keys to their values in given language
  */
 window.vehicleSearch.translateEnum = function(columnName, key, language){
-    // Not found (nor does it belong) in metadata, don't translate
+    // MongoDB _id column. Not found (nor does it belong) in metadata, don't translate
     if(columnName == '_id'){
         return key;
     }
@@ -107,27 +106,106 @@ window.vehicleSearch.initMetadata = function(callback){
 
 
 /*
- * Refresh method. Executes the query and updates the result grid.
+ * Refresh method. Reads query parameters from the QueryBuilder widget
+ * and tells GridView to update itself. 
  */
 window.vehicleSearch.refresh = function() {
 
-    makeUpperCase = function(obj){
-        for(var i in obj){
-            if(typeof obj[i] == 'string' && i == '$regex'){
-                obj[i] = obj[i].toUpperCase();
-            }
-            if(typeof obj[i] == 'object'){
-                obj[i] = makeUpperCase(obj[i]);
-            }
-        }
-        return obj;
-    };
-
+    // makeUpperCase = function(obj){
+    //     for(var i in obj){
+    //         if(typeof obj[i] == 'string' && i == '$regex'){
+    //             obj[i] = obj[i].toUpperCase();
+    //         }
+    //         if(typeof obj[i] == 'object'){
+    //             obj[i] = makeUpperCase(obj[i]);
+    //         }
+    //     }
+    //     return obj;
+    // };
+    //
     // Get the query as a MongoDB query object
-    var qry = jQuery('#search_ui').queryBuilder('getMongo');
-
+    //var qry = jQuery('#search_ui').queryBuilder('getMongo');
+    //
     // Turn all text fields into uppercase.
-    window.vehicleSearch.mongoQuery = makeUpperCase(qry);
+    //window.vehicleSearch.mongoQuery = makeUpperCase(qry);
+
+
+    // var qry = jQuery('#search_ui').queryBuilder('getRules');
+    //
+    //    {
+    //        "condition": "AND",
+    //        "rules": [
+    //            {
+    //                "id": "price",
+    //                "field": "price",
+    //                "type": "double",
+    //                "input": "text",
+    //                "operator": "less",
+    //                "value": "10.25"
+    //            },
+    //            {
+    //                "condition": "OR",
+    //                "rules": [
+    //                    {
+    //                        "id": "category",
+    //                        "field": "category",
+    //                        "type": "integer",
+    //                        "input": "select",
+    //                        "operator": "equal",
+    //                        "value": "2"
+    //                    },
+    //                    {
+    //                        "id": "category",
+    //                        "field": "category",
+    //                        "type": "integer",
+    //                        "input": "select",
+    //                        "operator": "equal",
+    //                        "value": "1"
+    //                    }
+    //                ]
+    //            },
+    //            {
+    //                "id": "in_stock",
+    //                "field": "in_stock",
+    //                "type": "integer",
+    //                "input": "radio",
+    //                "operator": "equal",
+    //                "value": "1"
+    //            }
+    //        ]
+    //    }
+
+    function scrubQuery(queryIn){
+
+        if(queryIn['condition'] && queryIn['rules']){
+            var queryOut = {
+                co: queryIn['condition'],
+                ru: []
+            };
+
+            for(i in queryIn['rules']){
+                // Scrub rules reqursively
+                queryOut['ru'][i] = scrubQuery(queryIn['rules'][i]);
+            }
+
+            return queryOut;
+
+        } else {
+            var queryOut = {
+                c: queryIn['field'],
+                o: queryIn['operator'],
+                v: queryIn['value']
+            }
+
+            return queryOut;
+        }
+    }
+
+    var q = jQuery('#search_ui').queryBuilder('getRules');
+    console.log(q);
+
+    window.vehicleSearch.query = scrubQuery(q)
+    console.log(window.vehicleSearch.query);
 
     // Tell bs_grid to reload the data
     jQuery('#vehicle_table').bs_grid('displayGrid', true);
@@ -141,7 +219,7 @@ window.vehicleSearch.initSearch = function(callback){
     var qbOptions = {
         optgroups: {},
         filters: [],
-        allow_groups: false,
+        allow_groups: true,
         allow_empty: true
     };
 
@@ -328,8 +406,8 @@ window.vehicleSearch.initGrid = function(callback){
             };
 
             // Filter params
-            if(window.vehicleSearch.mongoQuery){
-                newRequest.find = JSON.stringify(window.vehicleSearch.mongoQuery);
+            if(window.vehicleSearch.query){
+                newRequest.find = JSON.stringify(window.vehicleSearch.query);
             }
 
             return newRequest;
@@ -396,7 +474,7 @@ window.vehicleSearch.initGrid = function(callback){
 };
 
 /*
- *
+ * FIXME: don't build pyramids.
  */
 jQuery(document).ready(function(){
     window.vehicleSearch.initMetadata(function(){
