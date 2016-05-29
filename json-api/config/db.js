@@ -1,3 +1,13 @@
 module.exports = {
-     url : 'mongodb://localhost/trafi_opendata'
+    dbBackend: 'mongodb',
+    //dbBackend: 'mysql',
+    
+    mongoDbUrl : 'mongodb://localhost/trafi_opendata',
+
+    mysql: {
+        host: 'localhost',
+        user: 'trafi_opendata',
+        password: 'trafi_opendata',
+        database: 'trafi_opendata'
+    }
 }

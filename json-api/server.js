@@ -1,11 +1,10 @@
 // == External Modules ==================
 var express           = require('express');
 var bodyParser        = require('body-parser');
-var mongoose          = require('mongoose');
-var mongoosePaginate  = require('mongoose-paginate');
+var mysql             = null;
 
 // == Config =============================
-var db	              = require('./config/db');
+var dbConfig          = require('./config/db');
 var metadata          = require('../metadata');
 //var security        = require('../config/security');
 var port              = 3000;
@@ -14,13 +13,8 @@ var port              = 3000;
 var routes            = require("./app/routes"); 
 //var logger          = require('../logger');
 
+
 // == Initialization =====================
-// Connect to MongoDB
-mongoose.connect(db.url);
-mongoose.set('debug', true);
-
-routes.initialize(metadata);
-
 var app = express();
 
 // parse application/json 
@@ -37,8 +31,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 //app.use(errorhandler)
 
-// Here are the actual API calls
-routes.addAPIRouter(app, mongoose, mongoosePaginate);
+// The actual API calls are here
+var apiRouter = routes.getApiRouter(metadata, app, dbConfig);
+app.use('/api/v1.0', apiRouter);
 
 // Default route
 app.use(function(req, res, next){
@@ -52,4 +47,3 @@ console.log('server.js: listening on: ' + port);
 
 // Expose app
 exports = module.exports = app;
-
