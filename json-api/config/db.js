@@ -1,6 +1,6 @@
 module.exports = {
-    dbBackend: 'mongodb',
-    //dbBackend: 'mysql',
+    //dbBackend: 'mongodb',
+    dbBackend: 'mysql',
     
     mongoDbUrl : 'mongodb://localhost/trafi_opendata',
 
