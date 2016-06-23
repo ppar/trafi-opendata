@@ -1,27 +1,41 @@
 ## Introduction
 
 JSON API and a web interface for accessing open vehicle registration
-data released by Trafi, the Finnish Transport Safety Agencey.
+data released by [http://www.trafi.fi/](Trafi), the Finnish Transport
+Safety Agencey.
 
 
 ## Motivation
 
-This is my first project using Node.js and MongoDB.
-
-I wrote this to teach myself these technologies, having mostly lived
-in PHP/MySQL land previously. As such, the implementation choices and
-code should be taken with a grain of salt.
+This is my first project using Node.js ~~and
+[https://www.mongodb.com/](MongoDB)~~. I wrote this mostly
+to teach myself these technologies, having more or less lived in PHP/MySQL
+land previously. As such, the implementation choices and code should
+be taken with a grain of salt.
 
 ## Implementation
 
-The JSON API runs on Node.js, MongoDB, Mongoose and Express. Python
-scripts are used for data import.
+The JSON API runs on Node.js andn [http://expressjs.com/](Express.js)
+and has (rudimentary) support for MongoDB and MySQL/MariaDB backends.
+MongoDB proved to have horrible performance during
+development, even when with trivial queries over indexed fields, so
+MySQL/MariaDB is the meaningful choice for the moment. 
 
-The WWW interface is built on Bootstrap, jQuery, jQuery QueryBuilder
-and "bs_grid" datagrid.
+The MongoDB backend uses [http://mongoosejs.com/](Mongoose) and
+[https://github.com/edwardhotchkiss/mongoose-paginate](mongoose-paginate). 
+The MySQL backend uses https://github.com/felixge/node-mysql .
 
-### Implementation issues
+Python scripts are used for importing and normalizing the data
+provided by Trafi.
 
+The WWW interface is built on Bootstrap, jQuery, the excellent
+[http://querybuilder.js.org/demo.html](jQuery QueryBuilder),
+[http://www.pontikis.net/labs/bs_grid/](bs_grid) datagrid and
+a plethora of dependent JavaScript modules.
+
+
+## Implementation issues
+### Data
 Importing the ~ 800 MB CSV file consumes ~ 8 GB in MongoDB, without
 indexes. With single-column indexes, the database takes 12-14 GB.
 
@@ -33,15 +47,20 @@ Even with indexes in place, queries like
 
 use seeking instead of indexes and take forever to execute. To add
 insult to injury, MongoDB 2.6 can't explain() queries without
-executing them first. MongoDB 3.x seems to have a better explain()
+executing them first. MongoDB 3.x would seem to have a better explain()
 feature without this problem. 
 
-I will branch this project to try out MarialDB/MySQL instead; getting
-MongoDB to perform with this dataset seems to take a lot more effort.
+For comparison, when imported into a MariaDB/MySQL InnoDB table,
+with all columns indexed and with shadow "foo_UPPER" columns added
+(a workaround for of MongoDB's lack of case insensitive indexes),
+the binary data takes only a "modest" 6 GB on disk.
+
+### UI
+Currently, the web UI is a mess of JavaScript. Some refactoring is
+needed to make the code maintainable and neat.
 
 
 ## Data Set
-
 Trafi publishes anonymized open data on registered land vehicles,
 boats and ships. This project initially focuses on vehicle data.
 For background, see
@@ -98,7 +117,12 @@ Varying dates
 Install platform packages
 
 ```
-# apt-get install mongodb python3-pymongo
+# apt-get install mariadb-{server,client} python3-pymysql
+```
+
+~~~apt-get install mongodb python3-pymongo~~~
+
+```
 # apt-get install nodejs npm
 ```
 
@@ -109,19 +133,22 @@ $ ./tools/download-trafi-data.sh
 $ unzip rawdata/4.5/160407_Ajoneuvot_4.5.zip
 ```
 
-Import metadata:
 
-```
-$ ./tools/metadata2mongodb.py metadata.json trafi_opendata metadata
-```
+#### MongoDB import
 
-Import vehicle data (note: the this will consume about 14 GB under /var/lib/mongodb !)
+Import vehicle data (note: the this will consume 14+ GB under /var/lib/mongodb !)
 
 ```
 $ ./tools/csv2mongodb  'AvoinData 4.5.csv' trafi_opendata vehicles
 $ ./tools/createmongoindexes.py metadata.json trafi_opendata vehicles
 ```
 
+
+#### MySQL Import
+
+...
+
+#### Node,s server
 Pull in NPM packages, start the API
 
 ```
@@ -184,7 +211,7 @@ thing afloat.
 ## License
 
 ### Code
-TBD
+TBD. It's Open Source. I'm a coder, Jim, not a lawyer.
 
 ### Metadata
 
