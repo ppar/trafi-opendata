@@ -1,9 +1,40 @@
 #!/usr/bin/python3 -Werror
 
+# 
+# SQL schema creation and data import script.
 #
-# Imports a raw CSV file from trafi.fi 
+# Reads metadata.json and the Trafi CSV dump and generates SQL 
+# CREATE TABLE and INSERT statements. Either prints SQL to stdout
+# or executes them directly on a MySQL server.
 #
+# Performs sanity checks on CSV data by checking ENUM values against
+# expected values and determining which number columns contain int
+# vs. float values.
+# 
 
+# USAGE: ./tools/csv2sql.py [optname=optval] [optname=optval] ...
+#
+# Where options and their defaults are:
+#
+#     metadataFileName=metadata.json
+#     csvFileName=AvoinData 4.5.csv
+#     outputTarget=stdout
+#     debug=False
+#
+#     dbEngine=aria
+#     dbServer=localhost
+#     dbName=trafi_opendata
+#     dbUser=trafi_opendata
+#     dbPass=trafi_opendata
+#
+#     dropTable=True
+#     createTable=True
+#     createIndexes=False
+#     insertData=False
+#
+# outputTarget can be either 'db' or 'stdout'
+ 
+### Modules #######################################################
 from __future__ import print_function
 import sys
 import csv
@@ -15,18 +46,28 @@ import re
 import pymysql.cursors
 import pymysql
 
+
+### Constants #####################################################
 LF = "\n"
 TAB = "\t"
 
-#
+### Globals #######################################################
+
+# Used to keep track of differences between data definition from 
+# Trafi and their actual data
 INTCOLS = {}
 FLOATCOLS = {}
 MARTIAN_ENUMS = {}
+
+# ./metadata.json
 metadata = None
+
+# DB params
 dbConn = None
 dbCursor = None
 startTime = None
 
+# Command line parameters and their defaults
 options = {
     'outputTarget': 'stdout',
     
@@ -43,27 +84,41 @@ options = {
     'dbServer': 'localhost',
     'dbUser': 'trafi_opendata',
     'dbPass': 'trafi_opendata',
-    'dbName': 'trafi_opendata'
+    'dbName': 'trafi_opendata',
 
     'debug': False
 }
 
+### Functions #####################################################
+
+#
+# Returns str with trailing ', ' removed
 #
 def stripComma(str):
     return re.sub(', $', '', str);
 
 #
+# Keeps track of which "number" columns are int
+# 
 def incrementIntCols(key):
     if key in INTCOLS:
         INTCOLS[key] += 1
     else:
         INTCOLS[key] = 1
 #
+# Keeps track of which "number" columns are float 
+#
 def incrementFloatCols(key):
     if key in FLOATCOLS:
         FLOATCOLS[key] += 1
     else:
         FLOATCOLS[key] = 1
+
+#
+# Keeps track of ENUM columns and their values
+#
+# Records unexpected ENUM values in MARTIAN_ENUMS, so they can be added
+# to the metadata definition
 #
 def checkEnum(metadata, key, val):
     for e in metadata['vehicles']['columns'][key]['enum']:               
@@ -78,11 +133,13 @@ def checkEnum(metadata, key, val):
     return False
 
 #
+# Reads metadata and retuns SQL schema as a CREATE TABLE statement
+#
 def getCreateTableVehicle():
     global metadata, dbConn, dbCursor, startTime, options 
     
     sql = ''
-    sql += 'DROP TABLE IF EXISTS vehicle;' + LF
+    #sql += 'DROP TABLE IF EXISTS vehicle;' + LF
     sql = 'CREATE TABLE vehicle ('  + LF
     sql += TAB + 'id' + " " + 'INT(10) unsigned NOT NULL AUTO_INCREMENT, '  + LF
 
@@ -109,14 +166,14 @@ def getCreateTableVehicle():
             sql +=  ' BOOLEAN DEFAULT NULL, ' + LF
             
         elif colDesc['type'] == 'string':
-            sql +=  ' CHAR(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL, '  + LF
+            sql +=  ' CHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL, '  + LF
                                     
         elif colDesc['type'] == 'enum':
             sql +=  ' ENUM(' + LF
             for enumVal in colDesc['enum']:
                 sql += "\t\t" + '\'' + enumVal['key'] + '\', ' + LF
             sql = stripComma(sql)
-            sql += TAB + ') CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL, '  + LF
+            sql += TAB + ') CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL, '  + LF
 
         else:
             raise Exception('Unknown column type ' + colDesc['type'])
@@ -141,6 +198,13 @@ def getCreateTableVehicle():
 
     return sql
 
+#
+# Returns an SQL INSERT statement for a single record in 'vehicle'
+#
+# @param   csvRecord   An object containing one CSV record's keys and values
+#
+# @return  A tuple consisting of 1) an SQL "INSERT INTO foo = %s ..." statement 
+#          and 1) list of values to substitute in the SQL statement
 #
 def getInsertVehicle(csvRecord):
     global metadata, dbConn, dbCursor, startTime, options 
@@ -238,6 +302,14 @@ def getInsertVehicle(csvRecord):
 
 
 #
+# Output an SQL query to stdout or DB
+#
+# Escapes and formats the SQL query in (sql, sqlValues) and either prints it out or 
+# executes it in the database.
+#
+# @param sql          SQL query string
+# @param sqlValues    List of values to replace in 'sql'
+#
 def outputSql(sql, sqlValues):
     global metadata, dbConn, dbCursor, startTime, options 
 
@@ -265,6 +337,13 @@ def outputSql(sql, sqlValues):
             print(sql, file=sys.stderr)
             print(sqlValues, file=sys.stderr)
 
+#
+# Generates INSERT statements for CSV data supplied by csvReader
+#
+# Either outputs statements to stdout or executes them in the DB
+#
+# @param csvReader   A csv.DictReader object that provides records from the CSV file
+#
 def insertVehicleData(csvReader):
     global metadata, dbConn, dbCursor, startTime, options 
 
@@ -291,6 +370,7 @@ def insertVehicleData(csvReader):
             outputSql(sql, sqlValues)
             count += 1
 
+            # Print out stats every 1000 rows
             if (count % 1000) == 0:
                 elapsedTime = time.time() - startTime
                 print("                                                                                 \r", file=sys.stderr, end='')
@@ -312,6 +392,7 @@ def insertVehicleData(csvReader):
         print("EXCEPTION:", file=sys.stderr)
         raise(e)
 
+    # Print stats and sanity check data
     elapsedTime = time.time() - startTime
     print("Inserted %d records, in %f seconds, last jarnro was %s" % (count, elapsedTime, lastJarnro), file=sys.stderr)
     print("INTCOLS", file=sys.stderr)
@@ -321,20 +402,27 @@ def insertVehicleData(csvReader):
     print("MARTIAN_ENUMS", file=sys.stderr)
     print(MARTIAN_ENUMS, file=sys.stderr)
 
-    
+
+#
+# Print usage instruction and exit
+#    
 def usage(argv):
     global options
     print("USAGE: %s [optname=optval] [optname=optval] ..." % argv[0], file=sys.stderr)
     print("Where options and their defaults are:", file=sys.stderr)
     for o in options:
         print(("    " + o + "=" + str(options[o])), file=sys.stderr)
-    print("outputTarget can be eitehr 'db' or 'stdout'", file=sys.stderr)
+    print("outputTarget can be either 'db' or 'stdout'", file=sys.stderr)
     sys.exit(1)
+
+
 #           
+# Main function
+#
 def main(argv):
     global metadata, dbConn, dbCursor, startTime, options 
 
-    # Command line options
+    # Process command line options
     for arg in argv[1:]:
         argsplit = arg.split('=')
         
@@ -352,16 +440,16 @@ def main(argv):
         
     startTime = time.time()
 
+    # Open CSV file
+    # The data seems to be Latin-1 encoded and ';'-delimited, with no quotes for strings
     if options['insertData']:
-        # Open CSV file
-        # The data seems to be Latin-1 encoded and ';'-delimited, with no quotes for strings
         csvFile = open(options['csvFileName'], newline='', encoding='latin1')
         csvReader = csv.DictReader(csvFile, restkey='_overflow', restval='_missing', delimiter=';')
 
     # Read in data types from metadata.json
     metadata = json.loads(open(options['metadataFileName']).read())
     
-    # Connect
+    # Connect to database
     if options['outputTarget'] == 'db':
         dbConn = pymysql.connect(host = options['dbServer'],
                                 user =  options['dbUser'],
@@ -369,6 +457,7 @@ def main(argv):
                                 db = options['dbName'])
         dbCursor = dbConn.cursor()
 
+    # Generate DROP TABLE statement
     if options['dropTable']:
         # With "-Werror", this will cause a bogus error about the vehicle table missing
         try:
@@ -377,12 +466,16 @@ def main(argv):
             print("While dropping table, ignored warning:", file=sys.stderr)
             print(w, file=sys.stderr)
                 
+    # Generate CREATE TABLE statement
     if options['createTable']:
         outputSql(getCreateTableVehicle(), [])
     
+    # Insert contents of CSV fle into database
     if options['insertData']:
         insertVehicleData(csvReader)
     
+#
+# Script body
 #
 main(sys.argv)
 
