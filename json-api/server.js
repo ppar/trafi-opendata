@@ -1,3 +1,12 @@
+/**
+ * Server module.
+ *
+ * This is the main application module. 
+ *
+ * @module  server
+ * @see     module:app/routes
+ */
+
 // == External Modules ==================
 var express           = require('express');
 var bodyParser        = require('body-parser');
@@ -5,7 +14,7 @@ var mysql             = null;
 
 // == Config =============================
 var dbConfig          = require('./config/db');
-var metadata          = require('../metadata');
+//var metadata          = require('../metadata');
 //var security        = require('../config/security');
 var port              = 3000;
 
@@ -32,7 +41,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //app.use(errorhandler)
 
 // The actual API calls are here
-var apiRouter = routes.getApiRouter(metadata, app, dbConfig);
+var apiRouter = routes.getApiRouter(app, dbConfig);
 app.use('/api/v1.0', apiRouter);
 
 // Default route

@@ -390,7 +390,7 @@ window.vehicleSearch.initSearch = function(callback){
 window.vehicleSearch.initGrid = function(callback){
 
     var bsGridOptions = {
-        ajaxFetchDataURL: "/api/v1.0/vehicles/listPaged",
+        ajaxFetchDataURL: "/api/v1.0/vehicles/list",
         ajaxMethod: "GET",
 
         ajaxRequestHandler: function(rq) {
@@ -401,8 +401,8 @@ window.vehicleSearch.initGrid = function(callback){
             var newRequest = {
                 page: rq.page_num,
                 limit: rq.rows_per_page,
-                resultParamDocs: 'page_data',
-                resultParamTotal: 'total_rows'
+                respDocs: 'page_data',
+                respTotal: 'total_rows'
             };
 
             // Filter params

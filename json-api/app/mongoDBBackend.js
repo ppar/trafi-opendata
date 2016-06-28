@@ -81,8 +81,8 @@ exports.setApiRoutes = function(app, apiRouter){
     //     pages: 501744
     //  }
     //
-    apiRouter.get('/vehicles/listPaged', function(req, res) {
-        console.log('== GET /vehicles/listPaged ===============================');
+    apiRouter.get('/vehicles/list', function(req, res) {
+        console.log('== GET /vehicles/list ===============================');
         console.log('HTTP query params:');
         console.log(req.query);
 
