@@ -88,11 +88,11 @@ window.vehicleSearch.initMetadata = function(callback){
                     }
                     
                     // Load car makes
-                    jQuery.ajax('/api/v1.0/vehicles/propertyDistinct/merkkiSelvakielinen_UPPER', {
+                    jQuery.ajax('/api/v1.0/vehicles/propertyDistinct/merkkiSelvakielinen', {
                         dataType: 'json',
                         success: function(data){
                             vehicleSearch.distinctProperties = {};
-                            vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER'] = data;
+                            vehicleSearch.distinctProperties['merkkiSelvakielinen'] = data;
 
                             //
                             callback();
@@ -239,19 +239,15 @@ window.vehicleSearch.initSearch = function(callback){
             }
         }
 
+        // String fields have a shadow "<colName>_UPPER" property
+        // in the MongoDB backend to facilitate using indexes with 
+        // case-insensitive searches.
+
         // The "vehicle make" field gets a typeahead helper
         if(colName == 'merkkiSelvakielinen'){
-            /****
-            f.type = 'string';
-            f.field = 'merkkiSelvakielinen_UPPER';
-            f.operators = [ 'equal' ];
-            f.input = function(rule, inputName){
-                return '<div><input class="form-control typeahead vehiclemake-typeahead" type="text" name="' + inputName + '"></div>';
-            };
-            ******/
             f = {
                 id: 'merkkiSelvakielinen',
-                field: 'merkkiSelvakielinen_UPPER',
+                field: 'merkkiSelvakielinen', // _UPPER
                 label: col.name,
                 type: 'string',
                 plugin: 'selectize',
@@ -270,10 +266,10 @@ window.vehicleSearch.initSearch = function(callback){
                 }
             }
 
-            for(i in window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER']){
+            for(i in window.vehicleSearch.distinctProperties['merkkiSelvakielinen']){  // _UPPER
                 f.plugin_config.options.push({
-                    id: window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER'][i],
-                    name: window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER'][i]
+                    id: window.vehicleSearch.distinctProperties['merkkiSelvakielinen'][i], // _UPPER
+                    name: window.vehicleSearch.distinctProperties['merkkiSelvakielinen'][i] // _UPPER
                 });
             }
 
@@ -301,12 +297,8 @@ window.vehicleSearch.initSearch = function(callback){
             break;
 
             case 'string':
-                // String fields have a shadow "colName_UPPER" property
-                // to facilitate using indexes with case-insensitive 
-                // searches. In this UI, all string searches are simply
-                // case insensitive.
                 f.type = 'string';
-                f.field = colName + '_UPPER';
+                f.field = colName /* + '_UPPER' */;
             break;
 
             case 'date':
