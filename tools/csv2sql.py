@@ -74,7 +74,8 @@ options = {
     'dropTable': True,
     'createTable': True,
     'createIndexes': False,
-    'dbEngine': 'aria',
+    #'dbEngine': 'aria',
+    'dbEngine': 'InnoDB',
     
     'insertData': False, 
 
