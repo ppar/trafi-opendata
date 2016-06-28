@@ -15,17 +15,18 @@ be taken with a grain of salt.
 
 ## Implementation
 
-The JSON API runs on Node.js andn [http://expressjs.com/](Express.js)
-and has (rudimentary) support for MongoDB and MySQL/MariaDB backends.
-MongoDB proved to have horrible performance during
-development, even when with trivial queries over indexed fields, so
-MySQL/MariaDB is the meaningful choice for the moment. 
+The JSON API runs on Node.js and [http://expressjs.com/](Express.js).
+There is (working) support for a MySQL/MariaDB backend and has
+experimental support for MongoDB and. MongoDB proved to have horrible
+performance during development, even when with trivial queries over
+indexed fields, so MySQL/MariaDB is the meaningful choice for the moment. 
 
 The MongoDB backend uses [http://mongoosejs.com/](Mongoose) and
 [https://github.com/edwardhotchkiss/mongoose-paginate](mongoose-paginate). 
+
 The MySQL backend uses https://github.com/felixge/node-mysql .
 
-Python scripts are used for importing and normalizing the data
+Python scripts are used to import and normalize the data
 provided by Trafi.
 
 The WWW interface is built on Bootstrap, jQuery, the excellent
@@ -112,19 +113,63 @@ Varying dates
   
 ## Usage / installation instructions
 
+### Metadata
+
+The API data import are controlled by schema information in `./metadata.json`; this data file determines how
+the CSV file is interpreted and how the SQL schema (and MongoDB structure) generated.
+
+The web UI uses `./metadata.json` and `./www/public/js/columns.json` for schema information.
+
+Unless the schema changes, it's not necessary to regenerate these
+files. Updating the schema may become necessary if Trafice adds new
+undocumented ENUM values or their stated data definition is changed in 
+a future open data release. Below are instructons to do so:
+
+- metadata.json and columns.json are generated from tab-delimited text files under `./schema/vehicles/*.txt`, which in turn 
+are created from individual sheets in sheets `./schema/17629-avoin_data_ajoneuvojen_luokitukset.numbers`
+by manually copying the relevant cells in Numbers and pasting them to `cat > foo.txt`.
+
+- `17629-avoin_data_ajoneuvojen_luokitukset.numbers` is `based on 17629-avoin_data_ajoneuvojen_luokitukset.xls`
+from Trafi, with additional data on data types, amended translations etc. 
+
+- To generate the JSON files, use the commands:
+
+```bash
+$ ./tools/genmeta.py schema/vehicles/_columns.txt schema/vehicles/ajoneuvoluokka.txt schema/vehicles/ajoneuvoryhma.txt schema/vehicles/ajoneuvonkaytto.txt schema/vehicles/vari.txt schema/vehicles/korityyppi.txt schema/vehicles/ohjaamotyyppi.txt schema/vehicles/kayttovoima.txt schema/vehicles/kunta.txt > metadata.json
+```
+
+```bash
+$ ./tools/genuijson.py schema/vehicles/_columns.txt > www/public/js/columns.json
+```
+
+
 ### JSON API
 
-Install platform packages
+#### Install platform packages
 
+- To use the MariaDB/MySQL backend:
 ```
 # apt-get install mariadb-{server,client} python3-pymysql
 ```
 
+- To use the MongoDB backend (stale):
+
 ~~~apt-get install mongodb python3-pymongo~~~
 
+#### Install NodeJS
 ```
 # apt-get install nodejs npm
 ```
+
+#### Install local Node modules
+Pull in NPM packages, start the API
+
+```
+$ cd json-api ; npm install ; cd ..
+```
+
+
+#### Download data
 
 Download data (~ 250 MB zipped)
 
@@ -133,10 +178,22 @@ $ ./tools/download-trafi-data.sh
 $ unzip rawdata/4.5/160407_Ajoneuvot_4.5.zip
 ```
 
+#### Import data into MySQL
 
-#### MongoDB import
+```sql
+> CREATE DATABASE trafi_opendata;
+> GRANT ALL ON trafi_opendata.* to 'trafi_opendata'@'localhost' IDENTIFIED BY 'trafi_opendata';
+> FLUSH PRIVILEGES:
+```
 
-Import vehicle data (note: the this will consume 14+ GB under /var/lib/mongodb !)
+```bash
+$ ./tools/csv2sql.py outputTarget=db insertData=true createIndexes=true
+
+```
+
+#### Import data into MongoDB
+
+(note: the this will consume 14+ GB under /var/lib/mongodb !)
 
 ```
 $ ./tools/csv2mongodb  'AvoinData 4.5.csv' trafi_opendata vehicles
@@ -144,16 +201,10 @@ $ ./tools/createmongoindexes.py metadata.json trafi_opendata vehicles
 ```
 
 
-#### MySQL Import
-
-...
-
-#### Node,s server
-Pull in NPM packages, start the API
+#### Start the JSON API
 
 ```
 $ cd json-api
-$ npm install
 $ nodejs server.js
 ```
 
@@ -175,25 +226,6 @@ $ ./download-ext-deps.sh
 ```
 
 Use www/conf/nginx_virtualhost.conf to set up a virtual host for the WWW interface and API
-
-### Metadata
-
-The API import scripts and the web UI use the files metadata.json and www/public/js/columns.json 
-for schema information. Unless the schema changes, it's not necessary to regenerate these files.
-
-These files are generated from tab-delimited text files under schema/vehicles/ , which in turn 
-are created from individual sheets in sheets ./schema/17629-avoin_data_ajoneuvojen_luokitukset.numbers
-(by copying the relevant cells in Numbers and pasting them to cat > foo.txt).
-
-17629-avoin_data_ajoneuvojen_luokitukset.numbers is based on 17629-avoin_data_ajoneuvojen_luokitukset.xls
-from Trafi, with additional data on data types, amended translations etc. 
-
-To generate the JSON files, use the commands:
-
-```
-$ ./tools/genmeta.py schema/vehicles/_columns.txt schema/vehicles/ajoneuvoluokka.txt schema/vehicles/ajoneuvoryhma.txt schema/vehicles/ajoneuvonkaytto.txt schema/vehicles/vari.txt schema/vehicles/korityyppi.txt schema/vehicles/ohjaamotyyppi.txt schema/vehicles/kayttovoima.txt schema/vehicles/kunta.txt > metadata.json
-$ ./tools/genuijson.py schema/vehicles/_columns.txt > www/public/js/columns.json
-```
 
 
 ## Acknowledgements
