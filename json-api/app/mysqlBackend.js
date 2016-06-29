@@ -27,6 +27,13 @@ exports.init = function(dbConfig){
     mysqlConn.connect();
 };
 
+logVariable = function(message, variable){
+    console.log('--- ' + message + ' ---- ' + typeof variable + ' -----------------------------');
+    console.log(variable)
+    console.log('--- /' + message + ' ------------------------------------------');
+    console.log();
+}
+
 /**
  * Generate an SQL WHERE clause from the 'find' JSON object
  *
@@ -40,8 +47,7 @@ exports.init = function(dbConfig){
  *                  were passed.
  */
 findObjectToWhereClause = function(find){
-    console.log('findObjectToWhereClause(): find:');
-    console.log(find);
+    logVariable('findObjectToWhereClause(): find', find);
 
     if(!find || !find['ru'] || !find['ru'].length){
         console.log('findObjectToWhereClause(): empty parameters')
@@ -173,6 +179,7 @@ apiCalls.vehicleProperties = function(req, res) {
 
         // 500
         if(mysqlError){
+            console.log(mysqlError);
             res.status(500);
             res.json({ error: 'Database error' });
             return;
@@ -250,9 +257,7 @@ apiCalls.vehicleProperties = function(req, res) {
 
 apiCalls.list = function(req, res) {
     console.log('== GET /vehicles/list ===============================');
-    console.log('QUERY: ');
-    console.log(req.query);
-    console.log('/QUERY');
+    logVariable('list(): req.query', req.query);
 
     // Parameters from API call
     var paginateOptions = {
@@ -279,20 +284,11 @@ apiCalls.list = function(req, res) {
     }
 
     // Build SQL queries
-    //var find = JSON.parse(req.query.find);
-    var find = req.query.find;
-    console.log('FIND'); console.log(find); console.log('/FIND');
-
-    var sqlWhere      = findObjectToWhereClause(find); // without JSON.parse()?
-    console.log(sqlWhere);
-
+    var sqlWhere      = (req.query.find ? findObjectToWhereClause(JSON.parse(req.query.find)) : '');   
     var sqlCountQuery = 'SELECT COUNT(*) AS c FROM vehicle ' + sqlWhere;
-    console.log(sqlCountQuery);
-
     var sqlRowQuery   = mysql.format('SELECT ?? FROM vehicle ', [vehicleProjection]) 
         + sqlWhere 
         + mysql.format('ORDER BY ? ASC LIMIT ? OFFSET ?', ['id', paginateOptions.limit, paginateOptions.offset]);
-    console.log(sqlRowQuery);
 
     // Results
     var resultJSON = {};
@@ -320,16 +316,13 @@ apiCalls.list = function(req, res) {
         //     at /Users/pfp/Code/trafi-opendata/json-api/node_modules/async/dist/async.js:842:20
         //     at /Users/pfp/Code/trafi-opendata/json-api/node_modules/async/dist/async.js:5218:17
         //
-        console.log('SENDING QUERY: ' + sqlCountQuery);
         mysqlConn.query(sqlCountQuery, function(mysqlError, mysqlResult, mysqlFields){
-            console.log('QUERY COMPLETE');
             if(mysqlError){
-                var errStr = 'Error querying MySQL row count';
-                console.log(errStr);
+                console.log(sqlCountQuery);
                 console.log(mysqlError);
                 resultStatus = 500;
-                res.json({ error: errStr });
-                callback(new Error(errStr));
+                res.json({ error: 'Database Error' });
+                callback(new Error('Database Error'));
                 return;
             }
             var count = parseInt(mysqlResult[0]['c']);
@@ -343,16 +336,13 @@ apiCalls.list = function(req, res) {
         //
         // FIXME: catch and handle errors from the API instead of crashing
         //
-        console.log('SENDING QUERY: ' + sqlRowQuery);
         mysqlConn.query(sqlRowQuery, function(mysqlError, mysqlResult, mysqlFields){
-            console.log('QUERY COMPLETE');
             if(mysqlError){
-                var errStr = 'Error querying MySQL data';
-                console.log(errStr);
+                console.log(sqlRowQuery);
                 console.log(mysqlError);
                 resultStatus = 500;
-                res.json({ error: errStr });
-                callback(new Error(errStr));
+                res.json({ error: 'Database Error' });
+                callback(new Error('Database Error'));
                 return;
             }                    
             resultJSON[resultParams['docs']]  =  mysqlResult;
