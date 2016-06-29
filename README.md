@@ -16,8 +16,8 @@ be taken with a grain of salt.
 ## Implementation
 
 The JSON API runs on Node.js and [http://expressjs.com/](Express.js).
-There is (working) support for a MySQL/MariaDB backend and has
-experimental support for MongoDB and. MongoDB proved to have horrible
+There is working support for a MySQL/MariaDB backend and 
+experimental support for MongoDB. MongoDB proved to have horrible
 performance during development, even when with trivial queries over
 indexed fields, so MySQL/MariaDB is the meaningful choice for the moment. 
 
