@@ -12,7 +12,6 @@ var apiCalls          = {};
 
 // == State ==================================
 var mysqlConn         = null;
-//var metadata          = null;
 var metadata          = require('../../metadata');
 
 /**
@@ -27,6 +26,9 @@ exports.init = function(dbConfig){
     mysqlConn.connect();
 };
 
+/**
+ * Dump a variable using console.log()
+ */
 logVariable = function(message, variable){
     console.log('--- ' + message + ' ---- ' + typeof variable + ' -----------------------------');
     console.log(variable)
@@ -158,6 +160,34 @@ findObjectToWhereClause = function(find){
 };
 
 /**
+ * Generate an SQL ORDER BY clause from the passed 'sort' object
+ *
+ * [ { c: 'merkkiSelvakielinen', d: 'ASC'}, { c: 'korityyppi', d: 'descending' }, ... ]
+ *
+ * @param {object}   sort  - An array of objects with property 'c' defining the column name, 
+ *                           'd' the sort order <asc|ascending|desc|descending>, and the order of
+ *                           objects the columns' precedence
+ * @return {string}  Either '' or a string like 'ORDER BY [colname] [ASC|DESC], .... '
+ */
+sortObjectToOrderClause = function(sort){
+    if(!sort || !(sort instanceof Array)){
+        return '';
+    }
+
+    var result = 'ORDER BY ';
+    var params = [];
+    for(i in sort){
+        result += '?? ' + (sort[i].d ? (sort[i].d.match(/^asc/i) ? 'ASC' : (sort[i].d.match(/^desc/i) ? 'DESC' : '')) : '') + ', ';
+        params.push(sort[i].c);
+    }
+    result = result.replace(/, $/, '');
+
+    // Escape MySQL identifier names
+    return mysql.format(result, params);
+};
+
+
+/**
  * API Call: Get properties of single vehicle
  *
  * Example:
@@ -221,6 +251,7 @@ apiCalls.vehicleProperties = function(req, res) {
  * @param  {object}  req.query.find      - Search parameters as a JSON-serialized object. 
  *                                         Default: {} -- return all records 
  *                                         Format: @see findObjectToWhereClause 
+ * @param  {object}  req.query.sort      - Sort order; [ { c: 'merkkiSelvakielinen', d: 'ASC'}, { c: 'korityyppi', d: 'DESC' }, ... ]
  * @param  {int}     req.query.page      - Number of page to return (default 1)
  * @param  {int}     req.query.limit     - Number of items per page (default 10)
  * @param  {object}  req.query.columns   - List of columns to return the result. Default: all
@@ -275,20 +306,38 @@ apiCalls.list = function(req, res) {
         'pages':  req.query.respPages || 'pages'
     };
     
-    // Hide <colName>_UPPER fields from query results.
+    // Build SQL queries
     var vehicleProjection = []
-    for(var colName in metadata.vehicles.columns){        
-        if(!colName.endsWith('_UPPER')){
-            vehicleProjection.push(colName);
+    if(req.query.columns){
+        // Sanity check
+        var columns = JSON.parse(req.query.columns);
+        for(i in columns){
+            if(metadata.vehicles.columns[columns[i]]){
+                vehicleProjection.push(columns[i]);
+            } else {
+                // 400 Bad Request
+                res.status(400);
+                res.json({ error: 'Invalid column(s)' });
+                return;
+            }
+        }
+    } else {
+        // Hide <colName>_UPPER fields from query results by default
+        for(var colName in metadata.vehicles.columns){
+            if(!colName.endsWith('_UPPER')){
+                vehicleProjection.push(colName);
+            }
         }
     }
 
-    // Build SQL queries
-    var sqlWhere      = (req.query.find ? findObjectToWhereClause(JSON.parse(req.query.find)) : '');   
+    var sqlWhere      = (req.query.find ? findObjectToWhereClause(typeof req.query.find == 'string' ? JSON.parse(req.query.find) : req.query.find) : '');
+    var sqlOrder      = (req.query.sort ? sortObjectToOrderClause(typeof req.query.sort == 'string' ? JSON.parse(req.query.sort) : req.query.sort) : '');
+    var sqlLimit      = mysql.format('LIMIT ? OFFSET ?', [paginateOptions.limit, paginateOptions.offset]);
+
     var sqlCountQuery = 'SELECT COUNT(*) AS c FROM vehicle ' + sqlWhere;
-    var sqlRowQuery   = mysql.format('SELECT ?? FROM vehicle ', [vehicleProjection]) 
-        + sqlWhere 
-        + mysql.format('ORDER BY ? ASC LIMIT ? OFFSET ?', ['id', paginateOptions.limit, paginateOptions.offset]);
+    var sqlRowQuery   = mysql.format('SELECT ?? FROM vehicle ', [vehicleProjection]) + ' ' + sqlWhere + ' ' + sqlOrder + ' ' + sqlLimit;
+
+    logVariable('sqlRowQuery', sqlRowQuery);
 
     // Results
     var resultJSON = {};
