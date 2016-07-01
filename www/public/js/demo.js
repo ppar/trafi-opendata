@@ -385,6 +385,7 @@ window.vehicleSearch.initGrid = function(callback){
         ajaxFetchDataURL: "/api/v1.0/vehicles/list",
         ajaxMethod: "GET",
 
+
         ajaxRequestHandler: function(rq) {
             // Show progress bar
             jQuery('#query_progress .progress-bar').show().css('width', '50%').attr('aria-valuenow', 50);
@@ -402,7 +403,14 @@ window.vehicleSearch.initGrid = function(callback){
                 newRequest.find = JSON.stringify(window.vehicleSearch.query);
             }
 
-            return newRequest;
+            // Sort params
+            if(rq.sorting){
+                newRequest.sort = [];
+                for(i in rq.sorting){
+                    newRequest.sort.push({'c': rq.sorting[i].field, 'd': rq.sorting[i].order });
+                }
+                return newRequest;
+            }
         },
 
         ajaxResponseHandler: function(response) {
