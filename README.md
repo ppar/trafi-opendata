@@ -89,13 +89,15 @@ Lack of "decommissioned" vehicles
   known vehicles, and another one with all vehicles that have been
   road-commissioned e.g. within the last five years.
 
-Data on vehicles makes and models is wildly inconsistent
+Inconsistent data
 
+- Vehicle make and model are freetext fields
 - As a result of individual officials typing (and mistyping) entries
   into various registers over the course of several decades, there is no
   consistent way to identify vehicle brands and models in the data.
-- Heuristics based on the model field and anonymized VIN numbers might
-  help in normalizing the model fields.
+- 'O's are spelled as zeroes, duplicates are rife, etc.
+- Some motors have 4000+ liter displacements because someone forgot to
+  move the commma
 
 Varying dates
 
@@ -103,6 +105,8 @@ Varying dates
   contain no date fields, others a full date
 
 ## Ideas
+
+- Makes and models should be normalized
 
 - If identifying vehicles across data sets is doable, it would be
   interesting to bookmark your own vehicle and follow it's mileage,
@@ -113,12 +117,14 @@ Varying dates
   
 ## Usage / installation instructions
 
-### Metadata
+### Updates to Metadata
 
-The API data import are controlled by schema information in `./metadata.json`; this data file determines how
-the CSV file is interpreted and how the SQL schema (and MongoDB structure) generated.
+The JSON API and the data import are controlled by schema information in 
+`./metadata.json`; this file describes the CSV file's format and how the 
+SQL schema (and MongoDB structure) are generated.
 
-The web UI uses `./metadata.json` and `./www/public/js/columns.json` for schema information.
+The web UI uses `./metadata.json` and `./www/public/js/columns.json` for schema 
+information.
 
 Unless the schema changes, it's not necessary to regenerate these
 files. Updating the schema may become necessary if Trafice adds new
