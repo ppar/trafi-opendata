@@ -13,6 +13,7 @@ var apiCalls          = {};
 // == State ==================================
 var mysqlConn         = null;
 var metadata          = require('../../metadata');
+var dbConfig          = null;
 
 /**
  * Initialization function
@@ -21,7 +22,8 @@ var metadata          = require('../../metadata');
  *
  * @param {object}    dbConfig   Database configuratio object from config/db.js.
  */
-exports.init = function(dbConfig){
+exports.init = function(_dbConfig){
+    dbConfig = _dbConfig;
     mysqlConn = mysql.createConnection(dbConfig.mysql);
     mysqlConn.connect();
 };
@@ -262,10 +264,12 @@ apiCalls.vehicleProperties = function(req, res) {
  * @param  {string}  req.query.respLimit - Override the name of the 'limit' property in the response JSON
  * @param  {string}  req.query.respPage  - Override the name of the 'page'  property in the response JSON
  * @param  {string}  req.query.respPages - Override the name of the 'pages' property in the response JSON
+ * @param  {string}  req.query.respFull  - Override the name of the 'full'  property in the response JSON
  *    
  * @return {object|string} 
  * 
  * Result format:
+ *
  *  {
  *     "docs": [
  *         {
@@ -280,10 +284,19 @@ apiCalls.vehicleProperties = function(req, res) {
  *         }
  *     ],
  *     total: 5017436,
+ *     full: 5017436,
  *     limit: 10,
  *     page: 1,
  *     pages: 501744
  *  }
+ * 
+ * Where 
+ * - 'docs' is an array of vehicles objects, 
+ * - 'total' the number of vehicles matching the 'find' parameter,
+ * - 'limit' the number of records requested per page,
+ * - 'pages' the number of pages matchind this query,
+ * - 'page' the number of the returned page in 'docs', and 
+ * - 'full' the total number of vehicles in the database.
  */
 
 apiCalls.list = function(req, res) {
@@ -301,6 +314,7 @@ apiCalls.list = function(req, res) {
     var resultParams = {
         'docs':   req.query.respDocs  || 'docs',
         'total':  req.query.respTotal || 'total',
+        'full':   req.query.respFull  || 'full',
         'limit':  req.query.respLimit || 'limit',
         'page':   req.query.respPage  || 'page',
         'pages':  req.query.respPages || 'pages'
@@ -342,6 +356,8 @@ apiCalls.list = function(req, res) {
     // Results
     var resultJSON = {};
     var resultStatus = null;
+
+    resultJSON[resultParams['full']] = dbConfig.totalVehicles;
 
     // Define sync tasks
     var tasks = [];
