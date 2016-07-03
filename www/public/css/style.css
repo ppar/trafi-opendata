@@ -16,8 +16,33 @@
     margin-bottom: 0px;
 }
 
-.search_ui.row {
+#search_ui_row {
     margin-bottom: 20px;
+}
+
+#search_ui_scroll_container {
+    max-height: 275px;
+    overflow-y: auto;
+}
+
+.selectize_control * {
+    z-index: 999;
+}
+
+#execute_search {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 22px;
+    padding-right: 22px;
+}
+
+#result_tab_row {
+    border-bottom: 1px solid rgb(221, 221, 221);
+    height: 42px;
+}
+
+#result_tab_row > div {
+    height: 42px;
 }
 
 #vehicle_table_container {

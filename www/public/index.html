@@ -68,6 +68,7 @@
 
     <!-- main container -->
     <div id="maincontainer" class="container-fluid">
+
       <!-- Top navbar -->
       <div class="row">
         <div class="col-md-12">
@@ -87,32 +88,70 @@
           </nav>
         </div>
       </div>
-
+      
       <!-- QueryBuilder widget -->
       <div id="search_ui_row" class="row search_ui">
         <div class="col-md-11 col-sm-11 col-xs-10">
-          <div id="search_ui"></div>
+          <div id="search_ui_scroll_container">
+            <div id="search_ui"></div>
+          </div>
         </div>
         <div id="search_button_col" class="col-md-1 col-sm-1 col-xs-2">
           <div id="search_button_container_rel" style="position: relative; height: 50px;">
-            <div id="search_button_container_abs" style="position: absolute; top: 0px; right: 0px;">
+            <!-- div id="search_button_container_abs" style="position: absolute; top: 0px; right: 0px;">
               <button id="search_ui_show_hide" type="button" 
-                      class="btn btn-default btn-xs" aria-expanded="false">Hide</button>
+                      class="btn btn-default btn-xs" aria-expanded="false">Hide Form</button>
+            </div-->
+
+            <div style="position: absolute; top: 0px; right: 0px;">
+              <button type="button"  id="search_ui_hide_btn" 
+                      class="btn btn-default btn-xs" aria-expanded="false">
+                <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                Hide search
+              </button>
             </div>
 
             <div id="search_button_container_abs" style="position: absolute; bottom: 0px; right: 0px;">
-
               <button id="execute_search" type="button" 
-                      class="btn btn-default btn-xs btn-block" aria-expanded="false">Search</button>
+                      class="btn btn-default btn-sm btn-block" aria-expanded="false">Search</button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Search results -->
-      <div id="row">
-        <div>
+      <div id="result_tab_row" clas="row">
+        <div class="col-md-2">
+          <ul class="nav nav-tabs">
+            <li role="presentation" class="active tab_table"><a class="tab_button tab_table" href="">Table</a></li>
+            <li role="presentation" class="disabled //tab_map"><a class="tab_button //tab_map" href="">Map</a></li>
+          </ul>
+        </div>
+        <div class="col-md-2" id="result_stats"></div>
+        <div class="col-md-7">
+          <div id="result_controls_table"></div>
+          <div id="result_controls_map" style="display: none;">Map controls</div>
+        </div>
+        <div class="col-md-1" id="">
+          <div style="position: absolute; top: 0px; right: 0px;">
+            <button type="button" id="search_ui_show_btn" style="display: none;"
+                    class="btn btn-default btn-xs" aria-expanded="false">
+              <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+              Show search
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="vehicle_table_row" class="row">
+        <div class="col-md-12">
           <div id="vehicle_table_container"></div>
+        </div>
+      </div>
+
+      <div id="vehicle_map_row" class="row" style="display: none;">
+        <div class="">
+          <div id="vehicle_map_container"> Map here </div>
         </div>
       </div>
       

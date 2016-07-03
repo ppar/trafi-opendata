@@ -303,6 +303,7 @@ window.vehicleSearch.getQueryBuilderConfig = function(){
                     create: true,
                     maxItems: 1,
                     plugins: ['remove_button'],
+                    dropdownParent: 'body',
                     options: []
                 },
                 valueSetter: function(rule, value) {
@@ -396,6 +397,39 @@ window.vehicleSearch.initQueryBuilder = function(){
                 .find('.selectize-control').removeClass('form-control');
         }
     });
+
+    // This is an eyesore, but we need to make sure the rest of the UI reacts properly
+    // to the query UI changing its size. There's no general event available and 
+    // jQuery().on() doesn't offer any wildcard matches either.
+    var allEvents = ''
+        + 'afterAddGroup.queryBuilder '
+        + 'afterAddRule.queryBuilder '
+        + 'afterApplyRuleFlags.queryBuilder '
+        + 'afterClear.queryBuilder '
+        + 'afterCreateRuleFilters.queryBuilder '
+        + 'afterCreateRuleInput.queryBuilder '
+        + 'afterCreateRuleOperators.queryBuilder '
+        + 'afterDeleteGroup.queryBuilder '
+        + 'afterDeleteRule.queryBuilder '
+        + 'afterInit.queryBuilder '
+        + 'afterInvert.queryBuilder '
+        + 'afterMove.queryBuilder '
+        + 'afterReset.queryBuilder '
+        + 'afterSetFilters.queryBuilder '
+        + 'afterUpdateGroupCondition.queryBuilder '
+        + 'afterUpdateRuleFilter.queryBuilder '
+        + 'afterUpdateRuleOperator.queryBuilder '
+        + 'afterUpdateRuleValue.queryBuilder '
+        + 'beforeAddGroup.queryBuilder '
+        + 'beforeAddRule.queryBuilder '
+        + 'beforeDeleteGroup.queryBuilder '
+        + 'beforeDeleteRule.queryBuilder '
+        + 'beforeDestroy.queryBuilder '
+        + 'validationError.queryBuilder '
+    ;
+    jQuery('#search_ui').on(allEvents, function(){
+        jQuery(window).resize();
+    });
 };
 
 
@@ -410,6 +444,8 @@ window.vehicleSearch.search = function() {
     window.vehicleSearch.showProgressBar();
 
     window.vehicleSearch.currentQuery = jQuery('#search_ui').queryBuilder('getRules');
+    window.vehicleSearch.currentQueryScrubbed = 
+        window.vehicleSearch.scrubQuery(window.vehicleSearch.currentQuery);
     window.vehicleSearch.currentResult = false;
 
     // Base JSON request
@@ -421,7 +457,7 @@ window.vehicleSearch.search = function() {
     // Filter parameters
     // FIXME: Have QueryBuilder validate the query, abort if invalid
     if(window.vehicleSearch.currentQuery){
-        ajaxData.find = JSON.stringify(window.vehicleSearch.scrubQuery(window.vehicleSearch.currentQuery));
+        ajaxData.find = JSON.stringify(window.vehicleSearch.currentQueryScrubbed);
     }
 
     // Sort parameters
@@ -440,8 +476,17 @@ window.vehicleSearch.search = function() {
         data: ajaxData,
         dataType: "json",
         success: function(data) {
+            // Properties: docs, total, limit, page, pages
             window.vehicleSearch.currentResult = data;
+            location.hash = JSON.stringify({'q': window.vehicleSearch.currentQueryScrubbed });
+
+            jQuery('#result_stats')
+                .html('' + data.total + ' / ' + data.full + '<br/>'
+                      + 'vehicles matched (' 
+                      + (100 * data.total/data.full).toFixed(2) + '%)');
+
             window.vehicleSearch.drawTable();
+
             // Hide progress bar
             window.vehicleSearch.hideProgressBar();
         },
@@ -488,11 +533,7 @@ window.vehicleSearch.hideProgressBar = function(){
  *
  * Reads application state and re-draws the vehicle table.
  */
-window.vehicleSearch.drawTable = function(){
-
-    // Properties of window.vehicleSearch.currentResult:
-    //  docs, total, limit, page, pages
-    
+window.vehicleSearch.drawTable = function(){    
     // Destroy previous table
     jQuery('#vehicle_table_container').html('');
 
@@ -532,14 +573,23 @@ window.vehicleSearch.drawTable = function(){
  * Resize event handler
  */
 window.vehicleSearch.resize = function(){
-    // Adjust the QueryBuilder container's height when the widgets are hidden
-    // Align the search button with the bottom of the QueryBuilder UI when visible
+    // Tweak the Search UI
     if(jQuery('#search_ui :visible').length){
-        jQuery('#search_button_container_rel').height(jQuery('#search_ui').height());
-        jQuery('#search_ui_show_hide').html('Hide');
+        // Search UI is visible
+
+        // Reduce jitter in the UI by pre-expanding the query builder's container
+        if(jQuery('#search_ui').height() < 250){
+            jQuery('#search_ui_scroll_container').height('');
+        } else {
+            jQuery('#search_ui_scroll_container').height(275);
+        }
+
+        // Align the search button with the bottom of the QueryBuilder UI
+        jQuery('#search_button_container_rel').height(jQuery('#search_ui_scroll_container').height());
+
     } else {
-        jQuery('#search_button_container_rel').height('15px');
-        jQuery('#search_ui_show_hide').html('Show search');
+        // Search UI is hidden, reset height adjustement
+        jQuery('#search_button_container_rel').height('');
     }
 
     // Adjust the vehicle table to full unused height
@@ -548,7 +598,8 @@ window.vehicleSearch.resize = function(){
     var areaH = '' + (winH - offset - 50) + 'px';
     jQuery('#vehicle_table_container').height(areaH);
 
-    // Reinitialize fixed table headers. Needed when the window width changes.
+    // Reinitialize fixed table headers. 
+    // Needed when either the window width or widget height changes
     jQuery('#vehicle_table').stickyTableHeaders({ 
         scrollableArea: jQuery("#vehicle_table_container")[0], 
         fixedOffset: 2 
@@ -567,20 +618,49 @@ jQuery(document).ready(function(){
         // Initialize query builder UI
         window.vehicleSearch.initQueryBuilder();
         
-        // Install click handlers
-        jQuery('#search_ui').on('click', function(){
-            // Fire resize event to keep the search button bottom-aligned
-            jQuery(window).resize();
-        });
-
+        // Search button
         jQuery('#execute_search').on('click', function(){
             window.vehicleSearch.search();
         });
 
-        jQuery('#search_ui_show_hide').on('click', function(){
-            jQuery('#search_ui').toggle();
-            jQuery('#execute_search').toggle();
+        // "Hide / show search" buttons
+        jQuery('#search_ui_hide_btn').on('click', function(){
+            jQuery('#search_ui_row').hide();
+            //jQuery('#execute_search').toggle();
+            jQuery('#search_ui_hide_btn').hide();
+            jQuery('#search_ui_show_btn').show();
             jQuery(window).resize();
+        });
+        jQuery('#search_ui_show_btn').on('click', function(){
+            jQuery('#search_ui_row').show();
+            //jQuery('#execute_search').toggle();
+            jQuery('#search_ui_show_btn').hide();
+            jQuery('#search_ui_hide_btn').show();
+            jQuery(window).resize();
+        });
+
+        // Clicks on Table / Map tabs
+        jQuery('.tab_button').on('click', function(event){
+            event.preventDefault();
+
+            if(jQuery(this).hasClass('tab_table')){
+                jQuery('li.tab_map').removeClass('active');
+                jQuery('#result_controls_map').hide();
+                jQuery('#vehicle_map_row').hide();
+
+                jQuery('li.tab_table').addClass('active');
+                jQuery('#result_controls_table').show();
+                jQuery('#vehicle_table_row').show();
+
+            } else if(jQuery(this).hasClass('tab_map')){
+                jQuery('li.tab_table').removeClass('active');
+                jQuery('#result_controls_table').hide();
+                jQuery('#vehicle_table_row').hide();
+
+                jQuery('li.tab_map').addClass('active');
+                jQuery('#result_controls_map').show();
+                jQuery('#vehicle_map_row').show();
+            }
         });
 
         // Set initial sizes
