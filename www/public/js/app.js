@@ -450,7 +450,7 @@ window.vehicleSearch.search = function() {
 
     // Base JSON request
     var ajaxData = {
-        page: 1,
+        page: window.vehicleSearch.currentPage,
         limit: 50
     };
 
@@ -478,13 +478,16 @@ window.vehicleSearch.search = function() {
         success: function(data) {
             // Properties: docs, total, limit, page, pages
             window.vehicleSearch.currentResult = data;
-            location.hash = JSON.stringify({'q': window.vehicleSearch.currentQueryScrubbed });
+
+            // FIXME: enable this when interpreting it is implemented
+            // location.hash = JSON.stringify({'q': window.vehicleSearch.currentQueryScrubbed });
 
             jQuery('#result_stats')
                 .html('' + data.total + ' / ' + data.full + '<br/>'
-                      + 'vehicles matched (' 
+                      + 'vehicles matched ('
                       + (100 * data.total/data.full).toFixed(2) + '%)');
 
+            window.vehicleSearch.drawTablePagination();
             window.vehicleSearch.drawTable();
 
             // Hide progress bar
@@ -526,6 +529,72 @@ window.vehicleSearch.hideProgressBar = function(){
     
     window.setTimeout(function(){ jQuery('#query_progress .progress-bar').hide(); }, 600);
 };
+
+/**
+ * Draw pagination widget for the vehicle table
+ *
+ * Generates the pagination widgets and its click handler
+ */
+window.vehicleSearch.drawTablePagination = function(){
+    // Number of buttons to display (odd)
+    var pageButtons = 9;
+
+    // 
+    var data = window.vehicleSearch.currentResult;
+    var html = '';
+
+    // Prev button
+    html += '<li id="table_pagination_prev" ';
+    if(data.page > 2){
+        html += 'data-pageno="' + (data.page - 1) + '"';
+    } else {
+        html += 'class="disabled"'
+    }
+    html += '><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>';
+    
+    // Number buttons
+    // FIXME: this centering looks ugly
+    for(i = (data.page - (pageButtons-1)/2); i <= (data.page + (pageButtons-1)/2); i++){
+        if(i < 1 || i > data.pages){
+            html += '<li class="table_pagination_page disabled"><a href="#">.</a></li>';
+        } else {
+            html += '<li class="table_pagination_page ' + (i === data.page ? 'active' : '') + '" '
+                + 'data-pageNo="' + i + '"><a href="#">' + i + '</a></li>';
+        }
+    }
+
+    // Next button
+    html += '<li id="table_pagination_next" ';
+    if(data.page < data.pages){
+        html += 'data-pageno="' + (data.page + 1) + '"';
+    } else {
+        html += 'class="disabled"'
+    }
+    html += '><a href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>';
+
+    // Inject it
+    jQuery('#table_pagination').html(html);
+
+    // Click handler
+    jQuery('#table_pagination li').on('click', function(event){
+        event.preventDefault();
+
+        if(jQuery(this).hasClass('disabled')){
+            return;
+        }
+
+        var newPage = parseInt(jQuery(this).data('pageno'));
+
+        if(!newPage || newPage < 1 || newPage > data.pages){
+            return;
+        }
+
+        // Switch page
+        window.vehicleSearch.currentPage = newPage;
+        window.vehicleSearch.search();
+    });
+};
+
 
 
 /**
@@ -620,6 +689,7 @@ jQuery(document).ready(function(){
         
         // Search button
         jQuery('#execute_search').on('click', function(){
+            window.vehicleSearch.currentPage = 1;
             window.vehicleSearch.search();
         });
 
@@ -667,6 +737,7 @@ jQuery(document).ready(function(){
         jQuery(window).resize();
 
         // Perform initial search to show all records
+        window.vehicleSearch.currentPage = 1;
         window.vehicleSearch.search();        
     });
 

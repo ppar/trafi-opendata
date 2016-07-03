@@ -121,16 +121,28 @@
 
       <!-- Search results -->
       <div id="result_tab_row" clas="row">
+        <!-- Tabs -->
         <div class="col-md-2">
           <ul class="nav nav-tabs">
             <li role="presentation" class="active tab_table"><a class="tab_button tab_table" href="">Table</a></li>
             <li role="presentation" class="disabled //tab_map"><a class="tab_button //tab_map" href="">Map</a></li>
           </ul>
         </div>
+        <!-- Stats -->
         <div class="col-md-2" id="result_stats"></div>
         <div class="col-md-7">
-          <div id="result_controls_table"></div>
-          <div id="result_controls_map" style="display: none;">Map controls</div>
+          <!-- Controls for table view -->
+          <div id="result_controls_table">
+            <nav>
+              <ul id="table_pagination" class="pagination">
+              </ul>
+            </nav>
+          </div>
+
+          <!-- Controls for map view -->
+          <div id="result_controls_map" style="display: none;">
+            ...
+          </div>
         </div>
         <div class="col-md-1" id="">
           <div style="position: absolute; top: 0px; right: 0px;">
@@ -142,16 +154,18 @@
           </div>
         </div>
       </div>
-      
+
+      <!-- Table view -->
       <div id="vehicle_table_row" class="row">
         <div class="col-md-12">
           <div id="vehicle_table_container"></div>
         </div>
       </div>
 
+      <!-- Map view -->
       <div id="vehicle_map_row" class="row" style="display: none;">
         <div class="">
-          <div id="vehicle_map_container"> Map here </div>
+          <div id="vehicle_map_container"> .... </div>
         </div>
       </div>
       

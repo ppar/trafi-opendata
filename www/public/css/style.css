@@ -45,6 +45,24 @@
     height: 42px;
 }
 
+#table_pagination {
+    margin: 0px 0px 0px 0px;
+}
+
+#table_pagination>li>a {
+    color: #000000;
+}
+
+.table_pagination_page.disabled {
+
+}
+
+#table_pagination li.disabled a {
+    color: rgb(233,233,233);
+    border-left-color: transparent;
+    background-color: rgb(233,233,233);
+}
+
 #vehicle_table_container {
     height: 100px;
     overflow: auto;
