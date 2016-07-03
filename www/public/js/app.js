@@ -5,35 +5,47 @@
 
 window.vehicleSearch = {};
 
-/*
- * Map enum columns' keys to their values in given language
+/**
+ * Map enum columns' values to their human-readable translations in given language
+ *
+ * Returns 'value' as-is if columnName isn't an ENUM column or the mapping fails otherwise.
+ *
+ * @param  {string}  columnName - Column name in metadata.json
+ * @param  {string}  value      - Value of the ENUM column
+ * @param  {string}  language   - Language code found in metadata.json (fi/sv/en)
+ * @return {string}  Translated ENUM value
  */
-window.vehicleSearch.translateEnum = function(columnName, key, language){
-    // MongoDB _id column. Not found (nor does it belong) in metadata, don't translate
-    if(columnName == '_id'){
-        return key;
+window.vehicleSearch.translateEnum = function(columnName, value, language){
+    // id and _id columns are not present in metadata
+    if(! window.vehicleSearch.metadata.vehicles.columns[columnName]){
+        return value;
     }
 
-    // Pass through empty values and non-enum variables
+    // Pass through non-enum variables
     if(window.vehicleSearch.metadata.vehicles.columns[columnName].type != 'enum'){
-        return key;
-    }
-    if(key === null || key == ''){
-        return key;
+        return value;
     }
 
-    if(window.vehicleSearch.metadata.vehicles.columns[columnName]['enumByKey'][key]){
-        return window.vehicleSearch.metadata.vehicles.columns[columnName]['enumByKey'][key].name[language];
+    // Pass through empty values
+    if(value === null || value === ''){
+        return value;
     }
 
-    // Unknown
-    //return columnName + ':' + key;
-    return key;
+    if(window.vehicleSearch.metadata.vehicles.columns[columnName]['enumByKey'][value]){
+        return window.vehicleSearch.metadata.vehicles.columns[columnName]['enumByKey'][value].name[language];
+    }
+
+    //return columnName + ':' + value;
+    return value;
 };
 
 
-/*
- * Return the vehicle with all enum values mapped
+/**
+ * Translate a 'vehicle' object's ENUM fields to given language
+ *
+ * @param  {object}  vehicle    - An object from the API, representing one vehicle entry
+ * @param  {string}  language   - Language code found in metadata.json (fi/sv/en)
+ * @return {object}  The 'vehicle' object with applicable fields' values translated
  */
 window.vehicleSearch.translateVehicle = function(vehicle, language){
     var result = {};
@@ -43,19 +55,140 @@ window.vehicleSearch.translateVehicle = function(vehicle, language){
     return result;
 }
 
-/*
+/**
  * Map column names to their human-readable labels in given language
+ *
+ * @param  {string}  columnName - Column name in metadata.json
+ * @param  {string}  language   - Language code found in metadata.json (fi/sv/en)
+ * @return {string}  Translated column name
  */
 window.vehicleSearch.translateColumnName = function(columnName, language){
-    if(columnName == '_id'){
-        return '_id';
+    // id and _id columns are not present in metadata
+    if(! window.vehicleSearch.metadata.vehicles.columns[columnName]){
+        return columnName;
     }
+
     return window.vehicleSearch.metadata.vehicles.columns[columnName].name[language];
 };
 
 
-/*
+/**
+ * Compress a QueryBuilder query object into JSON API syntax
+ *
+ * Takes a query object returned by the QueryBuilder widget and returns an
+ * equivalent object in the syntax expected by the trafi-opendata JSON API.
+ *
+ * Namely, identifiers (condition, rules, field, operator, value) are 
+ * abbreviated to (co, ru, c, o, v).
+ *
+ * Query objects can be nested; this function walks through the whole object 
+ * recursively.
+ *
+ * The input parameter's syntax is as follows:
+ *
+ *    {
+ *        "condition": "AND",
+ *        "rules": [
+ *            {
+ *                "id": "price",
+ *                "field": "price",
+ *                "type": "double",
+ *                "input": "text",
+ *                "operator": "less",
+ *                "value": "10.25"
+ *            },
+ *            {
+ *                "condition": "OR",
+ *                "rules": [
+ *                    {
+ *                        "id": "category",
+ *                        "field": "category",
+ *                        "type": "integer",
+ *                        "input": "select",
+ *                        "operator": "equal",
+ *                        "value": "2"
+ *                    },
+ *                    {
+ *                        "id": "category",
+ *                        "field": "category",
+ *                        "type": "integer",
+ *                        "input": "select",
+ *                        "operator": "equal",
+ *                        "value": "1"
+ *                    }
+ *                ]
+ *            },
+ *            {
+ *                "id": "in_stock",
+ *                "field": "in_stock",
+ *                "type": "integer",
+ *                "input": "radio",
+ *                "operator": "equal",
+ *                "value": "1"
+ *            }
+ *        ]
+ *    }
+ *
+ * @param  {object} queryIn - A query object (or a its sub-object) from QueryBuilder
+ * @return {object} Equivalent object with abbreviated identifiers.
+ */
+window.vehicleSearch.scrubQuery = function(queryIn){
+    if(queryIn['condition'] && queryIn['rules']){
+        var queryOut = {
+            co: queryIn['condition'],
+            ru: []
+        };
+
+        for(i in queryIn['rules']){
+            // Recurse
+            queryOut['ru'][i] = window.vehicleSearch.scrubQuery(queryIn['rules'][i]);
+        }
+
+        return queryOut;
+
+    } else {
+        var queryOut = {
+            c: queryIn['field'],
+            o: queryIn['operator'],
+            v: queryIn['value']
+        }
+
+        return queryOut;
+    }
+};
+
+    // makeUpperCase = function(obj){
+    //     for(var i in obj){
+    //         if(typeof obj[i] == 'string' && i == '$regex'){
+    //             obj[i] = obj[i].toUpperCase();
+    //         }
+    //         if(typeof obj[i] == 'object'){
+    //             obj[i] = makeUpperCase(obj[i]);
+    //         }
+    //     }
+    //     return obj;
+    // };
+    //
+    // Get the query as a MongoDB query object
+    //var qry = jQuery('#search_ui').queryBuilder('getMongo');
+    //
+    // Turn all text fields into uppercase.
+    //window.vehicleSearch.mongoQuery = makeUpperCase(qry);
+
+
+/**
  * Load metadata from the server and process it.
+ * 
+ * Loads columns.json, metadata.json and distinct values of vehicle
+ * makes (merkkiSelvakielinen) from the server. 
+ *
+ * Populates variables 'window.vehicleSearch.columns' and 
+ * 'window.vehicleSearch.metadata'.
+ *
+ * Indexes ENUM values by their keys under 
+ * window.vehicleSearch.columns[columnName]['enumByKey'][enumKey]
+ *
+ * @param {function}  callback  - Callback to call when loading completes.
  */
 window.vehicleSearch.initMetadata = function(callback){
     // Load columns.json
@@ -87,6 +220,18 @@ window.vehicleSearch.initMetadata = function(callback){
                         }
                     }
                     
+                    // Convenience array containing visible columns
+                    window.vehicleSearch.visibleColumns = [];
+                    for(i in window.vehicleSearch.columns){
+                        if(window.vehicleSearch.columns[i].defaultVisibility){
+                            window.vehicleSearch.visibleColumns.push({
+                                'name': window.vehicleSearch.columns[i].columnName, 
+                                'label': window.vehicleSearch.translateColumnName(
+                                    window.vehicleSearch.columns[i].columnName, 'en')
+                            });
+                        }
+                    }
+
                     // Load car makes
                     jQuery.ajax('/api/v1.0/vehicles/propertyDistinct/merkkiSelvakielinen', {
                         dataType: 'json',
@@ -104,128 +249,27 @@ window.vehicleSearch.initMetadata = function(callback){
     });
 };
 
-
-/*
- * Refresh method. Reads query parameters from the QueryBuilder widget
- * and tells GridView to update itself. 
+/**
+ * Create QueryBuilder configuration
+ *
+ * Walks through the metadata and builds a QueryBuilder configuration
+ * with all columns as search fields, taking field types, ENUMs etc into account.
+ *
+ * @return {object}  - A configuration object as expected by the QueryBuilder plugin.
  */
-window.vehicleSearch.refresh = function() {
-
-    // makeUpperCase = function(obj){
-    //     for(var i in obj){
-    //         if(typeof obj[i] == 'string' && i == '$regex'){
-    //             obj[i] = obj[i].toUpperCase();
-    //         }
-    //         if(typeof obj[i] == 'object'){
-    //             obj[i] = makeUpperCase(obj[i]);
-    //         }
-    //     }
-    //     return obj;
-    // };
-    //
-    // Get the query as a MongoDB query object
-    //var qry = jQuery('#search_ui').queryBuilder('getMongo');
-    //
-    // Turn all text fields into uppercase.
-    //window.vehicleSearch.mongoQuery = makeUpperCase(qry);
-
-
-    // var qry = jQuery('#search_ui').queryBuilder('getRules');
-    //
-    //    {
-    //        "condition": "AND",
-    //        "rules": [
-    //            {
-    //                "id": "price",
-    //                "field": "price",
-    //                "type": "double",
-    //                "input": "text",
-    //                "operator": "less",
-    //                "value": "10.25"
-    //            },
-    //            {
-    //                "condition": "OR",
-    //                "rules": [
-    //                    {
-    //                        "id": "category",
-    //                        "field": "category",
-    //                        "type": "integer",
-    //                        "input": "select",
-    //                        "operator": "equal",
-    //                        "value": "2"
-    //                    },
-    //                    {
-    //                        "id": "category",
-    //                        "field": "category",
-    //                        "type": "integer",
-    //                        "input": "select",
-    //                        "operator": "equal",
-    //                        "value": "1"
-    //                    }
-    //                ]
-    //            },
-    //            {
-    //                "id": "in_stock",
-    //                "field": "in_stock",
-    //                "type": "integer",
-    //                "input": "radio",
-    //                "operator": "equal",
-    //                "value": "1"
-    //            }
-    //        ]
-    //    }
-
-    function scrubQuery(queryIn){
-
-        if(queryIn['condition'] && queryIn['rules']){
-            var queryOut = {
-                co: queryIn['condition'],
-                ru: []
-            };
-
-            for(i in queryIn['rules']){
-                // Scrub rules reqursively
-                queryOut['ru'][i] = scrubQuery(queryIn['rules'][i]);
-            }
-
-            return queryOut;
-
-        } else {
-            var queryOut = {
-                c: queryIn['field'],
-                o: queryIn['operator'],
-                v: queryIn['value']
-            }
-
-            return queryOut;
-        }
-    }
-
-    var q = jQuery('#search_ui').queryBuilder('getRules');
-    console.log(q);
-
-    window.vehicleSearch.query = scrubQuery(q)
-    console.log(window.vehicleSearch.query);
-
-    // Tell bs_grid to reload the data
-    jQuery('#vehicle_table').bs_grid('displayGrid', true);
-};
-
-
-/*
- * Initialize the search UI
- */
-window.vehicleSearch.initSearch = function(callback){
+window.vehicleSearch.getQueryBuilderConfig = function(){
     var qbOptions = {
         optgroups: {},
         filters: [],
+        rules: [],
         allow_groups: true,
         allow_empty: true
     };
 
+    // Walk through columns
     for(i in window.vehicleSearch.columns){
         var colName = window.vehicleSearch.columns[i].columnName;
-        var col = window.vehicleSearch.metadata.vehicles.columns[colName];
+        var col     = window.vehicleSearch.metadata.vehicles.columns[colName];
 
         var f = {
             id: colName,
@@ -239,11 +283,11 @@ window.vehicleSearch.initSearch = function(callback){
             }
         }
 
-        // String fields have a shadow "<colName>_UPPER" property
-        // in the MongoDB backend to facilitate using indexes with 
-        // case-insensitive searches.
+        // In the MongoDB backend, string fields have experimental shadow 
+        // fields named "<colName>_UPPER" to facilitate using indexes with 
+        // case-insensitive searches. Currently the whole backend is not used.
 
-        // The "vehicle make" field gets a typeahead helper
+        // The "vehicle make" field uses the 'selectize' typeahead plugin
         if(colName == 'merkkiSelvakielinen'){
             f = {
                 id: 'merkkiSelvakielinen',
@@ -333,9 +377,17 @@ window.vehicleSearch.initSearch = function(callback){
         qbOptions.filters.push(f);
     }
 
-    // Create the query builder
-    jQuery('#search_ui').queryBuilder(qbOptions);
+    return qbOptions;
+};
 
+/**
+ * Initialize the QueryBuilder UI
+ *
+ * Creates the jQuery QueryBuilder widget using configuration based on the metadata.
+ */
+window.vehicleSearch.initQueryBuilder = function(){
+    // Create the query builder
+    jQuery('#search_ui').queryBuilder(window.vehicleSearch.getQueryBuilderConfig());
 
     // Fix for Selectize
     jQuery('#search_ui').on('afterCreateRuleInput.queryBuilder', function(e, rule) {
@@ -344,146 +396,199 @@ window.vehicleSearch.initSearch = function(callback){
                 .find('.selectize-control').removeClass('form-control');
         }
     });
+};
+
 
 /**
-
-    // Add typeahead helper to "vehicle make" inputs
-    //jQuery('#search_ui').on('afterCreateRuleInput.queryBuilder', function(e, rule, error, value){
-        jQuery('.vehiclemake-typeahead').typeahead(
-            { 
-                minLength: 1, 
-                highlight: true
-            }, 
-            { 
-                name: 'merkkiSelvakielinen_UPPER',
-                limit: 20,
-                // There's overly complicated and then there's this.
-                source: function(query, callback) {
-                    var matches = [];
-                    var re = new RegExp('^' + query, 'i');
-                    for(i in window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER']){
-                        if (re.test(window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER'][i])) {
-                            matches.push(window.vehicleSearch.distinctProperties['merkkiSelvakielinen_UPPER'][i]);
-                        }
-                    }
-                    callback(matches);
-                }
-            });
-    //});
-***/
-
-    callback();
-};
-
-
-/*
- * Initialize the bs_grid datagrid view
+ * Execute a search
+ *
+ * Reads query parameters from the QueryBuilder widget, queries the JSON API,
+ * stores updated application state and calls drawTable().
  */
-window.vehicleSearch.initGrid = function(callback){
+window.vehicleSearch.search = function() {
+    // Show progress bar
+    window.vehicleSearch.showProgressBar();
 
-    var bsGridOptions = {
-        ajaxFetchDataURL: "/api/v1.0/vehicles/list",
-        ajaxMethod: "GET",
+    window.vehicleSearch.currentQuery = jQuery('#search_ui').queryBuilder('getRules');
+    window.vehicleSearch.currentResult = false;
 
-
-        ajaxRequestHandler: function(rq) {
-            // Show progress bar
-            jQuery('#query_progress .progress-bar').show().css('width', '50%').attr('aria-valuenow', 50);
-
-            // Base Query
-            var newRequest = {
-                page: rq.page_num,
-                limit: rq.rows_per_page,
-                respDocs: 'page_data',
-                respTotal: 'total_rows'
-            };
-
-            // Filter params
-            if(window.vehicleSearch.query){
-                newRequest.find = JSON.stringify(window.vehicleSearch.query);
-            }
-
-            // Sort params
-            if(rq.sorting){
-                newRequest.sort = [];
-                for(i in rq.sorting){
-                    newRequest.sort.push({'c': rq.sorting[i].field, 'd': rq.sorting[i].order });
-                }
-                return newRequest;
-            }
-        },
-
-        ajaxResponseHandler: function(response) {
-            response.error = null;
-            response.debug_message = [];
-            response.filter_error = [];
-
-            for(row in response.page_data){
-                response.page_data[row] =
-                    window.vehicleSearch.translateVehicle(response.page_data[row], 'en');
-            }
-
-            // 
-            jQuery('#query_progress .progress-bar').css('width', '100%').attr('aria-valuenow', 100).hide();
-            return response;
-        },
-
-        ajaxErrorHandler: function(jqXHR, textStatus, errorThrown) {
-            alert('API call failed: ' + textStatus + ': ' + errorThrown);
-            
-        },
-
-        row_primary_key: "_id",
-
-        useFilters: false,
-        rowSelectionMode: false,
-        showSortingIndicator: true,
-        showSortingMenuButton: false,
-        useSortableLists: false,
-        
-        columns: []
-
-        /***
-        sorting: [
-            {sortingName: "Code", field: "customer_id", order: "none"},
-            {sortingName: "Lastname", field: "lastname", order: "ascending"},
-            {sortingName: "Firstname", field: "firstname", order: "ascending"},
-            {sortingName: "Date updated", field: "date_updated", order: "none"}
-        ],
-        ****/
-
+    // Base JSON request
+    var ajaxData = {
+        page: 1,
+        limit: 50
     };
- 
-    // Define the list of columns
-    // FIXME: list of visible columns should be a model and generate events
-    for(c in window.vehicleSearch.columns){
-        var col = window.vehicleSearch.columns[c];
 
-        bsGridOptions.columns.push({
-            field: col.columnName,
-            header: window.vehicleSearch.translateColumnName(col.columnName, 'en'),
-            // It only takes 'yes' for an answer...
-            visible: (col.defaultVisibility ? 'yes' : false)
-        });
+    // Filter parameters
+    // FIXME: Have QueryBuilder validate the query, abort if invalid
+    if(window.vehicleSearch.currentQuery){
+        ajaxData.find = JSON.stringify(window.vehicleSearch.scrubQuery(window.vehicleSearch.currentQuery));
     }
 
-    //
-    jQuery("#vehicle_table").bs_grid(bsGridOptions);
+    // Sort parameters
+    /***
+    if(false){
+        ajaxData.sort = [];
+        for(i in ... ){
+            ajaxData.sort.push({'c': rq.sorting[i].field, 'd': rq.sorting[i].order });
+        }
+    }
+    ***/
 
-    callback();
+    jQuery.ajax({
+        type: 'GET',
+        url: '/api/v1.0/vehicles/list',
+        data: ajaxData,
+        dataType: "json",
+        success: function(data) {
+            window.vehicleSearch.currentResult = data;
+            window.vehicleSearch.drawTable();
+            // Hide progress bar
+            window.vehicleSearch.hideProgressBar();
+        },
+
+        error: function(jqXHR, textStatus, errorThrown){
+            // TODO: civilized error handling
+            alert(textStatus);
+
+            // Hide progress bar
+            window.vehicleSearch.hideProgressBar();
+        }
+    });
 };
 
-/*
- * FIXME: don't build pyramids.
+/**
+ * Show the progress bar
+ *
+ * @param {int} value  - Percentage value to set the progressbar to. Default: 50
+ */
+window.vehicleSearch.showProgressBar = function(value){
+    value = (typeof value === 'undefined' ? 50 : parseInt(value));
+
+    jQuery('#query_progress .progress-bar')
+        .show()
+        .css('width', '' + value + '%')
+        .attr('aria-valuenow', value);
+};
+
+
+/**
+ * Hide the progress bar
+ */
+window.vehicleSearch.hideProgressBar = function(){
+    jQuery('#query_progress .progress-bar')
+        .css('width', '100%')
+        .attr('aria-valuenow', 100);
+    
+    window.setTimeout(function(){ jQuery('#query_progress .progress-bar').hide(); }, 600);
+};
+
+
+/**
+ * Draw the vehicle table
+ *
+ * Reads application state and re-draws the vehicle table.
+ */
+window.vehicleSearch.drawTable = function(){
+
+    // Properties of window.vehicleSearch.currentResult:
+    //  docs, total, limit, page, pages
+    
+    // Destroy previous table
+    jQuery('#vehicle_table_container').html('');
+
+    // Build HTML for new table
+    // FIXME: escape data-xyz attributes
+    var html = '<table id="vehicle_table" class="table table-striped table-condensed"><thead><tr>';
+    for(i in window.vehicleSearch.visibleColumns){
+        html += '<th data-columnName="' + window.vehicleSearch.visibleColumns[i].name + '">' 
+            + window.vehicleSearch.visibleColumns[i].label + '</th>';
+    }
+    html += '</thead><tbody>';
+    for(i in window.vehicleSearch.currentResult.docs){
+        var vehicle = window.vehicleSearch.translateVehicle(window.vehicleSearch.currentResult.docs[i], 'en');
+        html += '<tr data-vehicleId="' + vehicle.id + '">';
+        for(i in window.vehicleSearch.visibleColumns){
+            html += '<td data-vehicleId="' + vehicle.id + '" data-columnName="' 
+                + window.vehicleSearch.visibleColumns[i].name + '">'
+                + vehicle[window.vehicleSearch.visibleColumns[i].name]
+                + '</td>';
+        }
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+
+    // Repopulate the table
+    jQuery('#vehicle_table_container').html(html);
+
+    // Fix the headers in place
+    jQuery('#vehicle_table').stickyTableHeaders({ 
+        scrollableArea: jQuery("#vehicle_table_container")[0], 
+        fixedOffset: 2 
+    });
+};
+
+
+/**
+ * Resize event handler
+ */
+window.vehicleSearch.resize = function(){
+    // Adjust the QueryBuilder container's height when the widgets are hidden
+    // Align the search button with the bottom of the QueryBuilder UI when visible
+    if(jQuery('#search_ui :visible').length){
+        jQuery('#search_button_container_rel').height(jQuery('#search_ui').height());
+        jQuery('#search_ui_show_hide').html('Hide');
+    } else {
+        jQuery('#search_button_container_rel').height('15px');
+        jQuery('#search_ui_show_hide').html('Show search');
+    }
+
+    // Adjust the vehicle table to full unused height
+    var winH = jQuery(window).height();
+    var offset = jQuery('#vehicle_table_container').offset()['top'];
+    var areaH = '' + (winH - offset - 50) + 'px';
+    jQuery('#vehicle_table_container').height(areaH);
+
+    // Reinitialize fixed table headers. Needed when the window width changes.
+    jQuery('#vehicle_table').stickyTableHeaders({ 
+        scrollableArea: jQuery("#vehicle_table_container")[0], 
+        fixedOffset: 2 
+    });
+};
+
+/**
+ * Document Ready function; start the app.
  */
 jQuery(document).ready(function(){
+    // Install resize event handler
+    jQuery(window).resize(window.vehicleSearch.resize);
+
+    // Load metadata
     window.vehicleSearch.initMetadata(function(){
-        window.vehicleSearch.initSearch(function(){
-            window.vehicleSearch.initGrid(function() {
-                jQuery('#execute_search').on('click', function(){
-                    window.vehicleSearch.refresh();
-                });
-            });
+        // Initialize query builder UI
+        window.vehicleSearch.initQueryBuilder();
+        
+        // Install click handlers
+        jQuery('#search_ui').on('click', function(){
+            // Fire resize event to keep the search button bottom-aligned
+            jQuery(window).resize();
         });
+
+        jQuery('#execute_search').on('click', function(){
+            window.vehicleSearch.search();
+        });
+
+        jQuery('#search_ui_show_hide').on('click', function(){
+            jQuery('#search_ui').toggle();
+            jQuery('#execute_search').toggle();
+            jQuery(window).resize();
+        });
+
+        // Set initial sizes
+        jQuery(window).resize();
+
+        // Perform initial search to show all records
+        window.vehicleSearch.search();        
     });
+
 });
+

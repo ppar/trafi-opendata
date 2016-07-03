@@ -228,8 +228,9 @@ Pull in external dependencies
 ```
 $ cd www
 $ bower install
-$ ./download-ext-deps.sh
 ```
+
+~~~$ ./download-ext-deps.sh~~~
 
 Use www/conf/nginx_virtualhost.conf to set up a virtual host for the WWW interface and API
 
