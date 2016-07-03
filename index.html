@@ -1,0 +1,323 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Trafi-opendata by ppar</title>
+
+    <link rel="stylesheet" href="http://github.com/themes/minimal/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://github.com/themes/minimal/stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Trafi-opendata</h1>
+        <p>API and web interface to query trafi.fi&#39;s open vehicle registration data</p>
+
+        <p class="view"><a href="https://github.com/ppar/trafi-opendata">View the Project on GitHub <small>ppar/trafi-opendata</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/ppar/trafi-opendata/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/ppar/trafi-opendata/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/ppar/trafi-opendata">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h2>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>JSON API and a web interface for accessing open vehicle registration
+data released by <a href="Trafi">http://www.trafi.fi/</a>, the Finnish Transport
+Safety Agencey.</p>
+
+<h2>
+<a id="motivation" class="anchor" href="#motivation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Motivation</h2>
+
+<p>This is my first project using Node.js <del>and
+<a href="MongoDB">https://www.mongodb.com/</a></del>. I wrote this mostly
+to teach myself these technologies, having more or less lived in PHP/MySQL
+land previously. As such, the implementation choices and code should
+be taken with a grain of salt.</p>
+
+<h2>
+<a id="implementation" class="anchor" href="#implementation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Implementation</h2>
+
+<p>The JSON API runs on Node.js and <a href="Express.js">http://expressjs.com/</a>.
+There is working support for a MySQL/MariaDB backend and 
+experimental support for MongoDB. MongoDB proved to have horrible
+performance during development, even when with trivial queries over
+indexed fields, so MySQL/MariaDB is the meaningful choice for the moment. </p>
+
+<p>The MongoDB backend uses <a href="Mongoose">http://mongoosejs.com/</a> and
+<a href="mongoose-paginate">https://github.com/edwardhotchkiss/mongoose-paginate</a>. </p>
+
+<p>The MySQL backend uses <a href="https://github.com/felixge/node-mysql">https://github.com/felixge/node-mysql</a> .</p>
+
+<p>Python scripts are used to import and normalize the data
+provided by Trafi.</p>
+
+<p>The WWW interface is built on Bootstrap, jQuery, the excellent
+<a href="jQuery%20QueryBuilder">http://querybuilder.js.org/demo.html</a>,
+<a href="bs_grid">http://www.pontikis.net/labs/bs_grid/</a> datagrid and
+a plethora of dependent JavaScript modules.</p>
+
+<h2>
+<a id="implementation-issues" class="anchor" href="#implementation-issues" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Implementation issues</h2>
+
+<h3>
+<a id="data" class="anchor" href="#data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Data</h3>
+
+<p>Importing the ~ 800 MB CSV file consumes ~ 8 GB in MongoDB, without
+indexes. With single-column indexes, the database takes 12-14 GB.</p>
+
+<p>Even with indexes in place, queries like</p>
+
+<pre><code>  { $and: [ { prop0: 'FOO' }, { prop0: 'BAR' } ] }
+</code></pre>
+
+<p>use seeking instead of indexes and take forever to execute. To add
+insult to injury, MongoDB 2.6 can't explain() queries without
+executing them first. MongoDB 3.x would seem to have a better explain()
+feature without this problem. </p>
+
+<p>For comparison, when imported into a MariaDB/MySQL InnoDB table,
+with all columns indexed and with shadow "foo_UPPER" columns added
+(a workaround for of MongoDB's lack of case insensitive indexes),
+the binary data takes only a "modest" 6 GB on disk.</p>
+
+<h3>
+<a id="ui" class="anchor" href="#ui" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>UI</h3>
+
+<p>Currently, the web UI is a mess of JavaScript. Some refactoring is
+needed to make the code maintainable and neat.</p>
+
+<h2>
+<a id="data-set" class="anchor" href="#data-set" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Data Set</h2>
+
+<p>Trafi publishes anonymized open data on registered land vehicles,
+boats and ships. This project initially focuses on vehicle data.
+For background, see</p>
+
+<ul>
+<li><a href="http://www.trafi.fi/tietopalvelut/avoin_data">http://www.trafi.fi/tietopalvelut/avoin_data</a></li>
+<li><a href="http://www.trafi.fi/en/services/open_data">http://www.trafi.fi/en/services/open_data</a></li>
+</ul>
+
+<p>The provided data set presents some difficulties, such as:</p>
+
+<p>Lack of "decommissioned" vehicles</p>
+
+<ul>
+<li>Only vehicles with "commissioned for road use" status are incuded
+in Trafi's quarterly data dump.</li>
+<li>It's common for e.g. owners of hobbyist vehicles to temporarily
+decommission their cars when they're not being used in order to
+save on insurance and taxes, so each released data set contains
+only a semi-random snapshot of the vehicles that in fact see regular
+use.</li>
+<li>Continuously merging all released data sets from Trafi would allow
+us to slightly improve coverage, but this is far from
+perfect. Because the data is anonymized, a method of identifying
+individual vehicles across datasets and avoiding duplicates would
+need to be developed.</li>
+<li>Ideally, Trafi should release more complete data sets: one with all
+known vehicles, and another one with all vehicles that have been
+road-commissioned e.g. within the last five years.</li>
+</ul>
+
+<p>Inconsistent data</p>
+
+<ul>
+<li>Vehicle make and model are freetext fields</li>
+<li>As a result of individual officials typing (and mistyping) entries
+into various registers over the course of several decades, there is no
+consistent way to identify vehicle brands and models in the data.</li>
+<li>'O's are spelled as zeroes, duplicates are rife, etc.</li>
+<li>Some motors have 4000+ liter displacements because someone forgot to
+move the commma</li>
+</ul>
+
+<p>Varying dates</p>
+
+<ul>
+<li>Earlier entries only contain the registration year, some entries
+contain no date fields, others a full date</li>
+</ul>
+
+<h2>
+<a id="ideas" class="anchor" href="#ideas" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ideas</h2>
+
+<ul>
+<li><p>Makes and models should be normalized</p></li>
+<li><p>If identifying vehicles across data sets is doable, it would be
+interesting to bookmark your own vehicle and follow it's mileage,
+location and other data over time. This might be at odds with
+Trafi's goal of providing only anonymized data, although
+anonymization is meant to cover owners of vehicles, instead of the
+the vehicles themselves.</p></li>
+</ul>
+
+<h2>
+<a id="usage--installation-instructions" class="anchor" href="#usage--installation-instructions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage / installation instructions</h2>
+
+<h3>
+<a id="updates-to-metadata" class="anchor" href="#updates-to-metadata" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Updates to Metadata</h3>
+
+<p>The JSON API and the data import are controlled by schema information in 
+<code>./metadata.json</code>; this file describes the CSV file's format and how the 
+SQL schema (and MongoDB structure) are generated.</p>
+
+<p>The web UI uses <code>./metadata.json</code> and <code>./www/public/js/columns.json</code> for schema 
+information.</p>
+
+<p>Unless the schema changes, it's not necessary to regenerate these
+files. Updating the schema may become necessary if Trafice adds new
+undocumented ENUM values or their stated data definition is changed in 
+a future open data release. Below are instructons to do so:</p>
+
+<ul>
+<li><p>metadata.json and columns.json are generated from tab-delimited text files under <code>./schema/vehicles/*.txt</code>, which in turn 
+are created from individual sheets in sheets <code>./schema/17629-avoin_data_ajoneuvojen_luokitukset.numbers</code>
+by manually copying the relevant cells in Numbers and pasting them to <code>cat &gt; foo.txt</code>.</p></li>
+<li><p><code>17629-avoin_data_ajoneuvojen_luokitukset.numbers</code> is <code>based on 17629-avoin_data_ajoneuvojen_luokitukset.xls</code>
+from Trafi, with additional data on data types, amended translations etc. </p></li>
+<li><p>To generate the JSON files, use the commands:</p></li>
+</ul>
+
+<div class="highlight highlight-source-shell"><pre>$ ./tools/genmeta.py schema/vehicles/_columns.txt schema/vehicles/ajoneuvoluokka.txt schema/vehicles/ajoneuvoryhma.txt schema/vehicles/ajoneuvonkaytto.txt schema/vehicles/vari.txt schema/vehicles/korityyppi.txt schema/vehicles/ohjaamotyyppi.txt schema/vehicles/kayttovoima.txt schema/vehicles/kunta.txt <span class="pl-k">&gt;</span> metadata.json</pre></div>
+
+<div class="highlight highlight-source-shell"><pre>$ ./tools/genuijson.py schema/vehicles/_columns.txt <span class="pl-k">&gt;</span> www/public/js/columns.json</pre></div>
+
+<h3>
+<a id="json-api" class="anchor" href="#json-api" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>JSON API</h3>
+
+<h4>
+<a id="install-platform-packages" class="anchor" href="#install-platform-packages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install platform packages</h4>
+
+<ul>
+<li>To use the MariaDB/MySQL backend:</li>
+</ul>
+
+<pre><code># apt-get install mariadb-{server,client} python3-pymysql
+</code></pre>
+
+<ul>
+<li>To use the MongoDB backend (stale):</li>
+</ul>
+
+<p>~<del>apt-get install mongodb python3-pymongo</del>~</p>
+
+<h4>
+<a id="install-nodejs" class="anchor" href="#install-nodejs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install NodeJS</h4>
+
+<pre><code># apt-get install nodejs npm
+</code></pre>
+
+<h4>
+<a id="install-local-node-modules" class="anchor" href="#install-local-node-modules" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install local Node modules</h4>
+
+<p>Pull in NPM packages, start the API</p>
+
+<pre><code>$ cd json-api ; npm install ; cd ..
+</code></pre>
+
+<h4>
+<a id="download-data" class="anchor" href="#download-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Download data</h4>
+
+<p>Download data (~ 250 MB zipped)</p>
+
+<pre><code>$ ./tools/download-trafi-data.sh
+$ unzip rawdata/4.5/160407_Ajoneuvot_4.5.zip
+</code></pre>
+
+<h4>
+<a id="import-data-into-mysql" class="anchor" href="#import-data-into-mysql" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Import data into MySQL</h4>
+
+<div class="highlight highlight-source-sql"><pre><span class="pl-k">&gt;</span> CREATE DATABASE trafi_opendata;
+<span class="pl-k">&gt;</span> <span class="pl-k">GRANT</span> ALL <span class="pl-k">ON</span> trafi_opendata.<span class="pl-k">*</span> to <span class="pl-s"><span class="pl-pds">'</span>trafi_opendata<span class="pl-pds">'</span></span>@<span class="pl-s"><span class="pl-pds">'</span>localhost<span class="pl-pds">'</span></span> IDENTIFIED BY <span class="pl-s"><span class="pl-pds">'</span>trafi_opendata<span class="pl-pds">'</span></span>;
+<span class="pl-k">&gt;</span> FLUSH PRIVILEGES:</pre></div>
+
+<div class="highlight highlight-source-shell"><pre>$ ./tools/csv2sql.py outputTarget=db insertData=<span class="pl-c1">true</span> createIndexes=<span class="pl-c1">true</span>
+</pre></div>
+
+<h4>
+<a id="import-data-into-mongodb" class="anchor" href="#import-data-into-mongodb" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Import data into MongoDB</h4>
+
+<p>(note: the this will consume 14+ GB under /var/lib/mongodb !)</p>
+
+<pre><code>$ ./tools/csv2mongodb  'AvoinData 4.5.csv' trafi_opendata vehicles
+$ ./tools/createmongoindexes.py metadata.json trafi_opendata vehicles
+</code></pre>
+
+<h4>
+<a id="start-the-json-api" class="anchor" href="#start-the-json-api" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Start the JSON API</h4>
+
+<pre><code>$ cd json-api
+$ nodejs server.js
+</code></pre>
+
+<h3>
+<a id="www-interface" class="anchor" href="#www-interface" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>WWW Interface</h3>
+
+<p>Install platform packages</p>
+
+<pre><code># apt-get install nginx
+# npm install bower
+</code></pre>
+
+<p>Pull in external dependencies</p>
+
+<pre><code>$ cd www
+$ bower install
+</code></pre>
+
+<p>~<del>$ ./download-ext-deps.sh</del>~</p>
+
+<p>Use www/conf/nginx_virtualhost.conf to set up a virtual host for the WWW interface and API</p>
+
+<h2>
+<a id="acknowledgements" class="anchor" href="#acknowledgements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Acknowledgements</h2>
+
+<p>The following tutorials and blog posts were vital in getting this
+thing afloat.</p>
+
+<ul>
+<li><a href="https://www.mongodb.com/blog/post/building-your-first-application-mongodb-creating-rest-api-using-mean-stack-part-1">https://www.mongodb.com/blog/post/building-your-first-application-mongodb-creating-rest-api-using-mean-stack-part-1</a></li>
+<li><p><a href="https://github.com/ctindel/reader/tree/master/api.old/v1.0">https://github.com/ctindel/reader/tree/master/api.old/v1.0</a></p></li>
+<li><p><a href="http://singlepageappbook.com/">http://singlepageappbook.com/</a></p></li>
+<li><a href="https://blog.risingstack.com/node-hero-tutorial-getting-started-with-node-js/">https://blog.risingstack.com/node-hero-tutorial-getting-started-with-node-js/</a></li>
+<li><a href="https://docs.mongodb.com/getting-started">https://docs.mongodb.com/getting-started</a></li>
+</ul>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<h3>
+<a id="code" class="anchor" href="#code" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Code</h3>
+
+<p>TBD. It's Open Source. I'm a coder, Jim, not a lawyer.</p>
+
+<h3>
+<a id="metadata" class="anchor" href="#metadata" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Metadata</h3>
+
+<p>The files ./metadata.json, ./www/public/js/columns.json and all files under ./schema are derived 
+from the "Description of data content" (17629-avoin_data_ajoneuvojen_luokitukset.xls) part of "Open 
+data for vehicles 4.5", released by Trafi.fi on 8 th of April 2016 at 
+<a href="http://www.trafi.fi/en/services/open_data">http://www.trafi.fi/en/services/open_data</a>  . The data is licensed under "Creative Commons Attribution 
+4.0 International (CC BY 4.0)" license: <a href="http://creativecommons.org/licenses/by/4.0/deed.en">http://creativecommons.org/licenses/by/4.0/deed.en</a></p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/ppar">ppar</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="http://github.com/themes/minimal/javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
+
