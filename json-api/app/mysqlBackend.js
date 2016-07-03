@@ -307,7 +307,7 @@ apiCalls.list = function(req, res) {
     };
     
     // Build SQL queries
-    var vehicleProjection = []
+    var vehicleProjection = ['id']
     if(req.query.columns){
         // Sanity check
         var columns = JSON.parse(req.query.columns);
