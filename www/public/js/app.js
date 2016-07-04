@@ -5,6 +5,8 @@
 
 window.vehicleSearch = {};
 
+window.vehicleSearch.heightAdjustement = 20;
+
 /**
  * Map enum columns' values to their human-readable translations in given language
  *
@@ -484,8 +486,8 @@ window.vehicleSearch.search = function() {
 
             jQuery('#result_stats')
                 .html('' + data.total + ' / ' + data.full + '<br/>'
-                      + 'vehicles matched ('
-                      + (100 * data.total/data.full).toFixed(2) + '%)');
+                      + '<span style="white-space: nowrap;">vehicles matched ('
+                      + (100 * data.total/data.full).toFixed(2) + '%)</span>');
 
             window.vehicleSearch.drawTablePagination();
             window.vehicleSearch.drawTable();
@@ -664,7 +666,7 @@ window.vehicleSearch.resize = function(){
     // Adjust the vehicle table to full unused height
     var winH = jQuery(window).height();
     var offset = jQuery('#vehicle_table_container').offset()['top'];
-    var areaH = '' + (winH - offset - 50) + 'px';
+    var areaH = '' + (winH - offset - window.vehicleSearch.heightAdjustement) + 'px';
     jQuery('#vehicle_table_container').height(areaH);
 
     // Reinitialize fixed table headers. 

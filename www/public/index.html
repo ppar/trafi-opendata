@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Vehicle Data</title>
+    <title>vehicledata.fi</title>
 
     <!-- meta name="description" content=""-->
     <!-- meta name="author" content="" -->
@@ -70,25 +70,30 @@
     <div id="maincontainer" class="container-fluid">
 
       <!-- Top navbar -->
-      <div class="row">
+      <!--div class="row">
         <div class="col-md-12">
           <nav class="navbar navbar-default">
             <div class="container-fluid">
               <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" 
-                        data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                  <span class="sr-only">Toggle navigation</span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">Vehicle Data</a>
+                <a class="navbar-brand" href="#">vehicledata.fi</a>
+              </div>
+              <div class="navbar-right">
+                <a class="navbar-brand" target="_blank" href="https://github.com/ppar/trafi-opendata/">About</a>
               </div>
             </div>
           </nav>
         </div>
-      </div>
+      </div-->
       
+      <!-- Top navbar -->
+      <div id="navbar_row" class="row">
+        <div class="col-md-12">
+          <nav class="well well-sm">
+            vehicledata.fi
+          </nav>
+        </div>
+      </div>
+
       <!-- QueryBuilder widget -->
       <div id="search_ui_row" class="row search_ui">
         <div class="col-md-11 col-sm-11 col-xs-10">
@@ -168,7 +173,18 @@
           <div id="vehicle_map_container"> .... </div>
         </div>
       </div>
-      
+
+      <!-- Footer -->
+      <div id="footer_row" class="row">
+        <div class="col-md-2"><a href="http://www.vehicledata.fi/">vehicledata.fi</a></div>
+        <div class="col-md-3">Info: <a href="http://ppar.github.io/trafi-opendata/">http://ppar.github.io/trafi-opendata/</a></div>
+        <div class="col-md-2"></div>
+        <div class="col-md-5">
+          <div >This service contains <a target="_blank" href="http://www.trafi.fi/en/services/open_data">Trafi's Open Data for Vehicles 4.5</a>, licensed under <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">CC 4.0</a>.
+          </div>
+        </div>
+      </div>
+
     </div>
   </body>
 </html>
