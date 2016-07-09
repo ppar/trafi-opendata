@@ -162,123 +162,6 @@ anonymization is meant to cover owners of vehicles, instead of the
 the vehicles themselves.</p></li>
 </ul>
 
-<h2>
-<a id="usage--installation-instructions" class="anchor" href="#usage--installation-instructions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage / installation instructions</h2>
-
-<h3>
-<a id="updates-to-metadata" class="anchor" href="#updates-to-metadata" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Updates to Metadata</h3>
-
-<p>The JSON API and the data import are controlled by schema information in 
-<code>./metadata.json</code>; this file describes the CSV file's format and how the 
-SQL schema (and MongoDB structure) are generated.</p>
-
-<p>The web UI uses <code>./metadata.json</code> and <code>./www/public/js/columns.json</code> for schema 
-information.</p>
-
-<p>Unless the schema changes, it's not necessary to regenerate these
-files. Updating the schema may become necessary if Trafice adds new
-undocumented ENUM values or their stated data definition is changed in 
-a future open data release. Below are instructons to do so:</p>
-
-<ul>
-<li><p>metadata.json and columns.json are generated from tab-delimited text files under <code>./schema/vehicles/*.txt</code>, which in turn 
-are created from individual sheets in sheets <code>./schema/17629-avoin_data_ajoneuvojen_luokitukset.numbers</code>
-by manually copying the relevant cells in Numbers and pasting them to <code>cat &gt; foo.txt</code>.</p></li>
-<li><p><code>17629-avoin_data_ajoneuvojen_luokitukset.numbers</code> is <code>based on 17629-avoin_data_ajoneuvojen_luokitukset.xls</code>
-from Trafi, with additional data on data types, amended translations etc. </p></li>
-<li><p>To generate the JSON files, use the commands:</p></li>
-</ul>
-
-<div class="highlight highlight-source-shell"><pre>$ ./tools/genmeta.py schema/vehicles/_columns.txt schema/vehicles/ajoneuvoluokka.txt schema/vehicles/ajoneuvoryhma.txt schema/vehicles/ajoneuvonkaytto.txt schema/vehicles/vari.txt schema/vehicles/korityyppi.txt schema/vehicles/ohjaamotyyppi.txt schema/vehicles/kayttovoima.txt schema/vehicles/kunta.txt <span class="pl-k">&gt;</span> metadata.json</pre></div>
-
-<div class="highlight highlight-source-shell"><pre>$ ./tools/genuijson.py schema/vehicles/_columns.txt <span class="pl-k">&gt;</span> www/public/js/columns.json</pre></div>
-
-<h3>
-<a id="json-api" class="anchor" href="#json-api" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>JSON API</h3>
-
-<h4>
-<a id="install-platform-packages" class="anchor" href="#install-platform-packages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install platform packages</h4>
-
-<ul>
-<li>To use the MariaDB/MySQL backend:</li>
-</ul>
-
-<pre><code># apt-get install mariadb-{server,client} python3-pymysql
-</code></pre>
-
-<ul>
-<li>To use the MongoDB backend (stale):</li>
-</ul>
-
-<p>~<del>apt-get install mongodb python3-pymongo</del>~</p>
-
-<h4>
-<a id="install-nodejs" class="anchor" href="#install-nodejs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install NodeJS</h4>
-
-<pre><code># apt-get install nodejs npm
-</code></pre>
-
-<h4>
-<a id="install-local-node-modules" class="anchor" href="#install-local-node-modules" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install local Node modules</h4>
-
-<p>Pull in NPM packages, start the API</p>
-
-<pre><code>$ cd json-api ; npm install ; cd ..
-</code></pre>
-
-<h4>
-<a id="download-data" class="anchor" href="#download-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Download data</h4>
-
-<p>Download data (~ 250 MB zipped)</p>
-
-<pre><code>$ ./tools/download-trafi-data.sh
-$ unzip rawdata/4.5/160407_Ajoneuvot_4.5.zip
-</code></pre>
-
-<h4>
-<a id="import-data-into-mysql" class="anchor" href="#import-data-into-mysql" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Import data into MySQL</h4>
-
-<div class="highlight highlight-source-sql"><pre><span class="pl-k">&gt;</span> CREATE DATABASE trafi_opendata;
-<span class="pl-k">&gt;</span> <span class="pl-k">GRANT</span> ALL <span class="pl-k">ON</span> trafi_opendata.<span class="pl-k">*</span> to <span class="pl-s"><span class="pl-pds">'</span>trafi_opendata<span class="pl-pds">'</span></span>@<span class="pl-s"><span class="pl-pds">'</span>localhost<span class="pl-pds">'</span></span> IDENTIFIED BY <span class="pl-s"><span class="pl-pds">'</span>trafi_opendata<span class="pl-pds">'</span></span>;
-<span class="pl-k">&gt;</span> FLUSH PRIVILEGES:</pre></div>
-
-<div class="highlight highlight-source-shell"><pre>$ ./tools/csv2sql.py outputTarget=db insertData=<span class="pl-c1">true</span> createIndexes=<span class="pl-c1">true</span>
-</pre></div>
-
-<h4>
-<a id="import-data-into-mongodb" class="anchor" href="#import-data-into-mongodb" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Import data into MongoDB</h4>
-
-<p>(note: the this will consume 14+ GB under /var/lib/mongodb !)</p>
-
-<pre><code>$ ./tools/csv2mongodb  'AvoinData 4.5.csv' trafi_opendata vehicles
-$ ./tools/createmongoindexes.py metadata.json trafi_opendata vehicles
-</code></pre>
-
-<h4>
-<a id="start-the-json-api" class="anchor" href="#start-the-json-api" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Start the JSON API</h4>
-
-<pre><code>$ cd json-api
-$ nodejs server.js
-</code></pre>
-
-<h3>
-<a id="www-interface" class="anchor" href="#www-interface" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>WWW Interface</h3>
-
-<p>Install platform packages</p>
-
-<pre><code># apt-get install nginx
-# npm install bower
-</code></pre>
-
-<p>Pull in external dependencies</p>
-
-<pre><code>$ cd www
-$ bower install
-</code></pre>
-
-<p>~<del>$ ./download-ext-deps.sh</del>~</p>
-
-<p>Use www/conf/nginx_virtualhost.conf to set up a virtual host for the WWW interface and API</p>
 
 <h2>
 <a id="acknowledgements" class="anchor" href="#acknowledgements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Acknowledgements</h2>
@@ -308,7 +191,7 @@ thing afloat.</p>
 <p>The files ./metadata.json, ./www/public/js/columns.json and all files under ./schema are derived 
 from the "Description of data content" (17629-avoin_data_ajoneuvojen_luokitukset.xls) part of "Open 
 data for vehicles 4.5", released by Trafi.fi on 8 th of April 2016 at 
-<a href="http://www.trafi.fi/en/services/open_data">http://www.trafi.fi/en/services/open_data</a>  . The data is licensed under "Creative Commons Attribution 
+<a href="http://www.trafi.fi/en/services/open_data">http://www.trafi.fi/en/services/open_data</a> under the "Creative Commons Attribution 
 4.0 International (CC BY 4.0)" license: <a href="http://creativecommons.org/licenses/by/4.0/deed.en">http://creativecommons.org/licenses/by/4.0/deed.en</a></p>
       </section>
       <footer>
