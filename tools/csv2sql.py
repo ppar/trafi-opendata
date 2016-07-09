@@ -479,6 +479,7 @@ def main(argv):
 
     # Open CSV file
     # The data seems to be Latin-1 encoded and ';'-delimited, with no quotes for strings
+    csvFile = None
     if modeOptions['insertData']:
         csvFile = open(options['csvFileName'], newline='', encoding='latin1')
         csvReader = csv.DictReader(csvFile, restkey='_overflow', restval='_missing', delimiter=';')
