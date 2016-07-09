@@ -3,36 +3,18 @@
 # 
 # SQL schema creation and data import script.
 #
-# Reads metadata.json and the Trafi CSV dump and generates SQL 
-# CREATE TABLE and INSERT statements. Either prints SQL to stdout
-# or executes them directly on a MySQL server.
+# Reads metadata.json and the Trafi CSV dump and enerates SQL 
+# CREATE TABLE, INSERT and ADD INDEX statements
+#
+# Can print SQL to stdout or connect directly to a MySQL server; the
+# latter mode is significantly slower.
 #
 # Performs sanity checks on CSV data by checking ENUM values against
 # expected values and determining which number columns contain int
 # vs. float values.
 # 
-
-# USAGE: ./tools/csv2sql.py [optname=optval] [optname=optval] ...
+# Usage: see the 'usage' function
 #
-# Where options and their defaults are:
-#
-#     metadataFileName=metadata.json
-#     csvFileName=AvoinData 4.5.csv
-#     outputTarget=stdout
-#     debug=False
-#
-#     dbEngine=aria
-#     dbServer=localhost
-#     dbName=trafi_opendata
-#     dbUser=trafi_opendata
-#     dbPass=trafi_opendata
-#
-#     dropTable=True
-#     createTable=True
-#     createIndexes=True
-#     insertData=False
-#
-# outputTarget can be either 'db' or 'stdout'
  
 ### Modules #######################################################
 from __future__ import print_function
@@ -68,26 +50,33 @@ dbCursor = None
 startTime = None
 
 # Command line parameters and their defaults
-options = {
-    'outputTarget': 'stdout',
-    
-    'dropTable': True,
-    'createTable': True,
-    'createIndexes': True,
-    #'dbEngine': 'aria',
-    'dbEngine': 'InnoDB',
-    
-    'insertData': False, 
+modeOptions = {
+    'dropTable': False,
+    'createTable': False,
+    'insertData': False,
+    'addIndexes': False
+}
 
+options = {
     'csvFileName': 'AvoinData 4.5.csv',
     'metadataFileName': 'metadata.json',
 
+    'createIndexes': False,
+
+    'outputTarget': 'stdout',
+
+    #'dbEngine': 'aria',
+    'dbEngine': 'InnoDB',
+    
     'dbServer': 'localhost',
     'dbUser': 'trafi_opendata',
     'dbPass': 'trafi_opendata',
     'dbName': 'trafi_opendata',
 
-    'debug': False
+    'debug': False,
+
+    'insertSkip': 0,
+    'insertCount': -1
 }
 
 ### Functions #####################################################
@@ -137,7 +126,7 @@ def checkEnum(metadata, key, val):
 # Reads metadata and retuns SQL schema as a CREATE TABLE statement
 #
 def getCreateTableVehicle():
-    global metadata, dbConn, dbCursor, startTime, options 
+    global metadata, dbConn, dbCursor, startTime, options, modeOptions 
     
     sql = 'CREATE TABLE vehicle ('  + LF
     sql += TAB + 'id' + " " + 'INT(10) unsigned NOT NULL AUTO_INCREMENT, '  + LF
@@ -165,7 +154,8 @@ def getCreateTableVehicle():
             sql +=  ' BOOLEAN DEFAULT NULL, ' + LF
             
         elif colDesc['type'] == 'string':
-            sql +=  ' CHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL, '  + LF
+            #sql +=  ' CHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL, '  + LF
+            sql +=  ' VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL, '  + LF
                                     
         elif colDesc['type'] == 'enum':
             sql +=  ' ENUM(' + LF
@@ -195,6 +185,26 @@ def getCreateTableVehicle():
     return sql
 
 #
+# Returns an "ALTER TABLE ADD INDEX .... " with index definitions
+# for all columns
+#
+# @return string An ALTER TABLE statement
+#
+def getAlterTableAddIndexes():
+    sql = "ALTER TABLE vehicle " + LF
+
+    for colName, colDesc in metadata['vehicles']['columns'].items():
+        if colName.endswith('_UPPER'):
+            continue
+        sql += TAB + 'ADD INDEX ' + colName + ' (' + colName + '), ' + LF
+
+    sql = stripComma(sql)
+    sql += LF
+
+    return sql
+
+
+#
 # Returns an SQL INSERT statement for a single record in 'vehicle'
 #
 # @param   csvRecord   An object containing one CSV record's keys and values
@@ -203,7 +213,7 @@ def getCreateTableVehicle():
 #          and 1) list of values to substitute in the SQL statement
 #
 def getInsertVehicle(csvRecord):
-    global metadata, dbConn, dbCursor, startTime, options 
+    global metadata, dbConn, dbCursor, startTime, options, modeOptions
 
     if options['debug']:
         print("----------------------------------------", file=sys.stderr)
@@ -306,8 +316,8 @@ def getInsertVehicle(csvRecord):
 # @param sql          SQL query string
 # @param sqlValues    List of values to replace in 'sql'
 #
-def outputSql(sql, sqlValues):
-    global metadata, dbConn, dbCursor, startTime, options 
+def outputSql(sql, sqlValues = []):
+    global metadata, dbConn, dbCursor, startTime, options
 
     if options['outputTarget'] == 'stdout':
         escapedValues = []
@@ -334,7 +344,7 @@ def outputSql(sql, sqlValues):
             print(sqlValues, file=sys.stderr)
 
 #
-# Generates INSERT statements for CSV data supplied by csvReader
+# Generate INSERT statements for CSV data supplied by csvReader
 #
 # Either outputs statements to stdout or executes them in the DB
 #
@@ -352,7 +362,14 @@ def insertVehicleData(csvReader):
         # Run INSERTs (one at a time, because a huge single-statement insert would timeout)
         for csvRecord in csvReader:
             sql = sqlValues = None
-                
+
+            if options['insertCount'] >= 0 and count == options['insertCount']:
+                return
+
+            if options['insertSkip'] > 0:
+                options['insertSkip'] -= 1
+                continue
+
             # Sanity check to confirm number of imported records
             if None != lastJarnro and (int(lastJarnro) + 1 != int(csvRecord['jarnro'])):
                 print("WARNING: at count=%d, non-consequtive change in jarnro from %s to %s" %
@@ -402,49 +419,75 @@ def insertVehicleData(csvReader):
 #
 # Print usage instruction and exit
 #    
-def usage(argv):
-    global options
+def usage(argv, reason=""):
+    global options, modeOptions
+
+    if reason:
+        print(reason, file=sys.stderr)
+    print("", file=sys.stderr)
+
     print("USAGE: %s [optname=optval] [optname=optval] ..." % argv[0], file=sys.stderr)
-    print("Where options and their defaults are:", file=sys.stderr)
+    print("", file=sys.stderr)
+    print("At least one of the following modes must be set to 'true':", file=sys.stderr)
+    for o in modeOptions:
+        print(("    " + o), file=sys.stderr)
+    print("", file=sys.stderr)
+    print("Optional parameters and their defaults:", file=sys.stderr)
     for o in options:
         print(("    " + o + "=" + str(options[o])), file=sys.stderr)
+    print("", file=sys.stderr)
     print("outputTarget can be either 'db' or 'stdout'", file=sys.stderr)
-    sys.exit(1)
 
+    sys.exit(1)
 
 #           
 # Main function
 #
 def main(argv):
-    global metadata, dbConn, dbCursor, startTime, options 
+    global metadata, dbConn, dbCursor, startTime, options, modeOptions
 
     # Process command line options
+    haveMode = False
     for arg in argv[1:]:
         argsplit = arg.split('=')
         
         if len(argsplit) != 2:
-            usage(argv)
-        if not argsplit[0] in options:
-            usage(argv)
-            
+            usage(argv, "Malformed arguments")
+
         if argsplit[1].lower() == 'true':
-            options[argsplit[0]] = True
+            argsplit[1] = True
         elif argsplit[1].lower() == 'false':
-            options[argsplit[0]] = False
+            argsplit[1] = False
+
+        if argsplit[0] in options:
+            if argsplit[0] in ['insertSkip', 'insertCount']:
+                options[argsplit[0]] = int(argsplit[1])
+            else:
+                options[argsplit[0]] = argsplit[1]
+
+        elif argsplit[0] in modeOptions:
+            modeOptions[argsplit[0]] = argsplit[1]
+            if argsplit[1]:
+                haveMode = True
         else:
-            options[argsplit[0]] = argsplit[1]
-        
+            usage(argv, "Unkown option " + argsplit[0])
+
+    if not haveMode:
+        usage(argv, "No modes enabled")
+
     startTime = time.time()
 
     # Open CSV file
     # The data seems to be Latin-1 encoded and ';'-delimited, with no quotes for strings
-    if options['insertData']:
+    if modeOptions['insertData']:
         csvFile = open(options['csvFileName'], newline='', encoding='latin1')
         csvReader = csv.DictReader(csvFile, restkey='_overflow', restval='_missing', delimiter=';')
 
     # Read in data types from metadata.json
-    metadata = json.loads(open(options['metadataFileName']).read())
-    
+    metadataFile = open(options['metadataFileName'])
+    metadata = json.loads(metadataFile.read())
+    metadataFile.close()
+
     # Connect to database
     if options['outputTarget'] == 'db':
         dbConn = pymysql.connect(host = options['dbServer'],
@@ -461,7 +504,7 @@ def main(argv):
         print('')
 
     # Generate DROP TABLE statement
-    if options['dropTable']:
+    if modeOptions['dropTable']:
         # With "-Werror", this will cause a bogus error about the vehicle table missing
         try:
             outputSql('DROP TABLE IF EXISTS vehicle', [])
@@ -470,13 +513,20 @@ def main(argv):
             print(w, file=sys.stderr)
                 
     # Generate CREATE TABLE statement
-    if options['createTable']:
+    if modeOptions['createTable']:
         outputSql(getCreateTableVehicle(), [])
     
     # Insert contents of CSV fle into database
-    if options['insertData']:
+    if modeOptions['insertData']:
         insertVehicleData(csvReader)
-    
+
+    # Generate ALTER TABLE [ADD INDEX ...]+ statement
+    if modeOptions['addIndexes']:
+        outputSql(getAlterTableAddIndexes())
+
+    #
+    if csvFile:
+        csvFile.close()
 #
 # Script body
 #
