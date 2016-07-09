@@ -30,3 +30,6 @@ $ ./tools/genmeta.py schema/vehicles/_columns.txt schema/vehicles/ajoneuvoluokka
 ```bash
 $ ./tools/genuijson.py schema/vehicles/_columns.txt > www/public/js/columns.json
 ```
+
+## Generating schema.sql
+./tools/csv2sql.py createTable=true createIndexes=true > schema.sql
