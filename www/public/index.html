@@ -47,144 +47,23 @@
     <link  href="/bc/jQuery-QueryBuilder/dist/css/query-builder.default.min.css" rel="stylesheet"/>
     <script src="/bc/jQuery-QueryBuilder/dist/js/query-builder.min.js"></script>
 
-    <!-- testing -->
+    <!-- StickyTableHeaders for the result table-->
     <script src="/bc/StickyTableHeaders/js/jquery.stickytableheaders.min.js"></script>
+
+    <!-- React -->
+    <script src="/bc/react/react.min.js"></script>
+    <script src="/bc/react/react-dom.min.js"></script>
+    <script src="/bc/babel/browser.min.js"></script>
 
     <!-- Local CSS and JS -->
     <link rel="stylesheet" href="/css/navbar.css"/>
     <link rel="stylesheet" href="/css/style.css"/>
     <script src="/js/app.js"></script>
-    <!-- script src="/js/test.js"></script-->
+    <script src="/js/react.js" type="text/babel"></script>
   </head>
 
   <body>
-    <!-- progress bar, fixed position at the top edge -->
-    <div id="query_progress" class="progress">
-      <div class="progress-bar progress-bar-striped active" role="progressbar" 
-           aria-valuenow="5" aria-valuemin="0" aria-valuemax="100" style="width: 45%">
-        <span class="sr-only"></span>
-      </div>
-    </div>
-
-    <!-- main container -->
-    <div id="maincontainer" class="container-fluid">
-
-      <!-- Top navbar -->
-      <!--div class="row">
-        <div class="col-md-12">
-          <nav class="navbar navbar-default">
-            <div class="container-fluid">
-              <div class="navbar-header">
-                <a class="navbar-brand" href="#">vehicledata.fi</a>
-              </div>
-              <div class="navbar-right">
-                <a class="navbar-brand" target="_blank" href="https://github.com/ppar/trafi-opendata/">About</a>
-              </div>
-            </div>
-          </nav>
-        </div>
-      </div-->
-      
-      <!-- Top navbar -->
-      <div id="navbar_row" class="row">
-        <div class="col-md-12">
-          <nav class="well well-sm">
-            vehicledata.fi
-          </nav>
-        </div>
-      </div>
-
-      <!-- QueryBuilder widget -->
-      <div id="search_ui_row" class="row search_ui">
-        <div class="col-md-11 col-sm-11 col-xs-10">
-          <div id="search_ui_scroll_container">
-            <div id="search_ui"></div>
-          </div>
-        </div>
-        <div id="search_button_col" class="col-md-1 col-sm-1 col-xs-2">
-          <div id="search_button_container_rel" style="position: relative; height: 50px;">
-            <!-- div id="search_button_container_abs" style="position: absolute; top: 0px; right: 0px;">
-              <button id="search_ui_show_hide" type="button" 
-                      class="btn btn-default btn-xs" aria-expanded="false">Hide Form</button>
-            </div-->
-
-            <div style="position: absolute; top: 0px; right: 0px;">
-              <button type="button"  id="search_ui_hide_btn" 
-                      class="btn btn-default btn-xs" aria-expanded="false">
-                <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
-                Hide search
-              </button>
-            </div>
-
-            <div id="search_button_container_abs" style="position: absolute; bottom: 0px; right: 0px;">
-              <button id="execute_search" type="button" 
-                      class="btn btn-default btn-sm btn-block" aria-expanded="false">Search</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Search results -->
-      <div id="result_tab_row" clas="row">
-        <!-- Tabs -->
-        <div class="col-md-2">
-          <ul class="nav nav-tabs">
-            <li role="presentation" class="active tab_table"><a class="tab_button tab_table" href="">Table</a></li>
-            <li role="presentation" class="disabled //tab_map"><a class="tab_button //tab_map" href="">Map</a></li>
-          </ul>
-        </div>
-        <!-- Stats -->
-        <div class="col-md-2" id="result_stats"></div>
-        <div class="col-md-7">
-          <!-- Controls for table view -->
-          <div id="result_controls_table">
-            <nav>
-              <ul id="table_pagination" class="pagination">
-              </ul>
-            </nav>
-          </div>
-
-          <!-- Controls for map view -->
-          <div id="result_controls_map" style="display: none;">
-            ...
-          </div>
-        </div>
-        <div class="col-md-1" id="">
-          <div style="position: absolute; top: 0px; right: 0px;">
-            <button type="button" id="search_ui_show_btn" style="display: none;"
-                    class="btn btn-default btn-xs" aria-expanded="false">
-              <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-              Show search
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Table view -->
-      <div id="vehicle_table_row" class="row">
-        <div class="col-md-12">
-          <div id="vehicle_table_container"></div>
-        </div>
-      </div>
-
-      <!-- Map view -->
-      <div id="vehicle_map_row" class="row" style="display: none;">
-        <div class="">
-          <div id="vehicle_map_container"> .... </div>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div id="footer_row" class="row">
-        <div class="col-md-2"><a href="http://www.vehicledata.fi/">vehicledata.fi</a></div>
-        <div class="col-md-3">Info: <a href="http://ppar.github.io/trafi-opendata/">http://ppar.github.io/trafi-opendata/</a></div>
-        <div class="col-md-2"></div>
-        <div class="col-md-5">
-          <div >This service contains <a target="_blank" href="http://www.trafi.fi/en/services/open_data">Trafi's Open Data for Vehicles 4.5</a>, licensed under <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">CC 4.0</a>.
-          </div>
-        </div>
-      </div>
-
+    <div id="react_vehicledata_app">
     </div>
   </body>
 </html>
