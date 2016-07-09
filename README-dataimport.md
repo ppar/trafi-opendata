@@ -23,11 +23,14 @@ InnoDB table with indexes:
 ## Option 1: Precompiled SQL files
 
 curl -O http://ppar-trafi-opendata.s3-website-eu-west-1.amazonaws.com/vehicles/4.5/mysql/sql/vehicle-001-drop-table.sql
+
 curl -O http://ppar-trafi-opendata.s3-website-eu-west-1.amazonaws.com/vehicles/4.5/mysql/sql/vehicle-002-create-table.sql
+
 curl -O http://ppar-trafi-opendata.s3-website-eu-west-1.amazonaws.com/vehicles/4.5/mysql/sql/vehicle-003-insert-data.sql.gz
+
 curl -O http://ppar-trafi-opendata.s3-website-eu-west-1.amazonaws.com/vehicles/4.5/mysql/sql/vehicle-004-add-indexes.sql
 
-vehicle-003-insert-data.sql.gz is 547 MB (3.4 GB uncompressed)
+- vehicle-003-insert-data.sql.gz is 547 MB (3.4 GB uncompressed)
 
 ```bash
 $ cat  vehicle-001-drop-table.sql     | mysql [...] 
