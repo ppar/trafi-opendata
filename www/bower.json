@@ -22,6 +22,8 @@
     "jquery-ui": "^1.11.4",
     "jQuery-QueryBuilder": "^2.3.3",
     "selectize": "^0.12.1",
-    "StickyTableHeaders": "^0.1.19"
+    "StickyTableHeaders": "^0.1.19",
+    "react": "^15.2.1",
+    "babel": "*"
   }
 }
