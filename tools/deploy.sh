@@ -1,6 +1,8 @@
 
 # Who needs Ansible?
 
+# curl https://raw.githubusercontent.com/ppar/trafi-opendata/master/tools/deploy.sh | sh -
+
 sudo apt-get update
 sudo apt-get -y install mariadb-{server,client} nginx nodejs npm unzip
 
