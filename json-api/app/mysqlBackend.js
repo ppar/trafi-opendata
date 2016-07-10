@@ -242,9 +242,12 @@ apiCalls.vehicleProperties = function(req, res) {
  * API Call: Return a listing of vehicles matching search criteria
  * 
  * Returns a listing of vehicles from the database; matching criteria in 'find';
- * in format selected by 'format'; optionally limited to page number 'page' when
- * split into pages of 'limit' records.
- * 
+ * in format selected by 'format'; split into pages of 'limit' records each and 
+ * limited to records on page number 'page' (starting from 1).
+ *
+ * If the number of records matched by 'find' is lower than the page selection,
+ * page 1 is returned instead. The JSON response contains the actual returned page
+ * number.
  *
  * 
  * @param  {object}  req                 - Request object passed by the Express Router
@@ -294,7 +297,7 @@ apiCalls.vehicleProperties = function(req, res) {
  * - 'docs' is an array of vehicles objects, 
  * - 'total' the number of vehicles matching the 'find' parameter,
  * - 'limit' the number of records requested per page,
- * - 'pages' the number of pages matchind this query,
+ * - 'pages' the number of pages matching this query,
  * - 'page' the number of the returned page in 'docs', and 
  * - 'full' the total number of vehicles in the database.
  */
@@ -303,12 +306,9 @@ apiCalls.list = function(req, res) {
     console.log('== GET /vehicles/list ===============================');
     logVariable('list(): req.query', req.query);
 
-    // Parameters from API call
-    var paginateOptions = {
-        page: parseInt(req.query.page)   || 1,
-        limit: parseInt(req.query.limit) || 10
-    };
-    paginateOptions.offset = paginateOptions.limit * (paginateOptions.page - 1);
+    // Pagination options
+    var page  = parseInt(req.query.page)  || 1;
+    var limit = parseInt(req.query.limit) || 10;
     
     // Names of properties used in the JSON response. 
     var resultParams = {
@@ -344,43 +344,25 @@ apiCalls.list = function(req, res) {
         }
     }
 
-    var sqlWhere      = (req.query.find ? findObjectToWhereClause(typeof req.query.find == 'string' ? JSON.parse(req.query.find) : req.query.find) : '');
-    var sqlOrder      = (req.query.sort ? sortObjectToOrderClause(typeof req.query.sort == 'string' ? JSON.parse(req.query.sort) : req.query.sort) : '');
-    var sqlLimit      = mysql.format('LIMIT ? OFFSET ?', [paginateOptions.limit, paginateOptions.offset]);
-
-    var sqlCountQuery = 'SELECT COUNT(*) AS c FROM vehicle ' + sqlWhere;
-    var sqlRowQuery   = mysql.format('SELECT ?? FROM vehicle ', [vehicleProjection]) + ' ' + sqlWhere + ' ' + sqlOrder + ' ' + sqlLimit;
-
-    logVariable('sqlRowQuery', sqlRowQuery);
+    // WHERE clause
+    var sqlWhere = (req.query.find
+                    ? findObjectToWhereClause(typeof req.query.find == 'string'
+                                              ? JSON.parse(req.query.find)
+                                              : req.query.find) + ' '
+                    : '');
 
     // Results
     var resultJSON = {};
     var resultStatus = null;
-
+    // Cheap optimization, since our table is R/O
     resultJSON[resultParams['full']] = dbConfig.totalVehicles;
 
     // Define sync tasks
     var tasks = [];
+
+    // Query the total number of rows matched by the 'find' parameter
     tasks.push(function countQuery(callback){
-        //
-        // FIXME: catch and handle errors from the API instead of crashing
-        //
-        // /Users/pfp/Code/trafi-opendata/json-api/node_modules/mysql/lib/protocol/Parser.js:77
-        //         throw err; // Rethrow non-MySQL errors
-        //         ^
-        //
-        // Error: Can't set headers after they are sent.
-        //     at ServerResponse.OutgoingMessage.setHeader (_http_outgoing.js:335:11)
-        //     at ServerResponse.header (/Users/pfp/Code/trafi-opendata/json-api/node_modules/express/lib/response.js:718:10)
-        //     at ServerResponse.send (/Users/pfp/Code/trafi-opendata/json-api/node_modules/express/lib/response.js:163:12)
-        //     at ServerResponse.json (/Users/pfp/Code/trafi-opendata/json-api/node_modules/express/lib/response.js:249:15)
-        //     at finalizer (/Users/pfp/Code/trafi-opendata/json-api/app/mysqlBackend.js:214:17)
-        //     at /Users/pfp/Code/trafi-opendata/json-api/node_modules/async/dist/async.js:5221:13
-        //     at /Users/pfp/Code/trafi-opendata/json-api/node_modules/async/dist/async.js:399:20
-        //     at /Users/pfp/Code/trafi-opendata/json-api/node_modules/async/dist/async.js:876:29
-        //     at /Users/pfp/Code/trafi-opendata/json-api/node_modules/async/dist/async.js:842:20
-        //     at /Users/pfp/Code/trafi-opendata/json-api/node_modules/async/dist/async.js:5218:17
-        //
+        var sqlCountQuery = 'SELECT COUNT(*) AS c FROM vehicle ' + sqlWhere;
         mysqlConn.query(sqlCountQuery, function(mysqlError, mysqlResult, mysqlFields){
             if(mysqlError){
                 console.log(sqlCountQuery);
@@ -392,15 +374,31 @@ apiCalls.list = function(req, res) {
             }
             var count = parseInt(mysqlResult[0]['c']);
             resultJSON[resultParams['total']] =  count;
-            resultJSON[resultParams['pages']] =  Math.ceil(count / paginateOptions.page);
+            resultJSON[resultParams['pages']] =  Math.ceil(count / limit);
             callback(null);
         });
     });
 
+    // Retrieve the requested rows
     tasks.push(function rowQuery(callback){
-        //
-        // FIXME: catch and handle errors from the API instead of crashing
-        //
+        // The user may have asked for a page number higher than is found 
+        // in the result set. Reset to page 1 in that case.
+        var offset = limit * (page - 1);
+        if(offset > resultJSON[resultParams['total']]){
+            page = 1;
+            offset = 0;
+        }
+
+        var sqlRowQuery = 
+            mysql.format('SELECT ?? FROM vehicle ', [vehicleProjection])
+            + sqlWhere
+            + (req.query.sort 
+               ? sortObjectToOrderClause(typeof req.query.sort == 'string'
+                                         ? JSON.parse(req.query.sort) 
+                                         : req.query.sort) + ' '
+               : '')
+            + mysql.format('LIMIT ? OFFSET ?', [limit, offset]);
+
         mysqlConn.query(sqlRowQuery, function(mysqlError, mysqlResult, mysqlFields){
             if(mysqlError){
                 console.log(sqlRowQuery);
@@ -411,8 +409,8 @@ apiCalls.list = function(req, res) {
                 return;
             }                    
             resultJSON[resultParams['docs']]  =  mysqlResult;
-            resultJSON[resultParams['limit']] =  paginateOptions.limit;
-            resultJSON[resultParams['page']]  =  paginateOptions.page;
+            resultJSON[resultParams['limit']] =  limit;
+            resultJSON[resultParams['page']]  =  page;
             callback(null);
         });
     });
