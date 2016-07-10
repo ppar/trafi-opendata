@@ -11,6 +11,6 @@ module.exports = {
         database: 'trafi_opendata'
     },
 
-    '//': 'Cheap optimization:'
+    '//': 'Cheap optimization:',
     totalVehicles: 5017436
 }
