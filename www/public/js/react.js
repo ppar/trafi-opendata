@@ -1,7 +1,10 @@
 /**
  * trafi-opendata/www/public/js/react.js
  *
- * User interface for trafi-opendata application
+ * User interface for trafi-opendata application. 
+ * 
+ * NOTE: this was originally implemented in jQuery, hence some 
+ * jQueryist conventions are still found in the code.
  */
 
 /**
@@ -11,16 +14,35 @@
  * creating the main application component.
  */
 var BootLoader = React.createClass({
-    render: function(){
-        if(! this.state || ! this.state.makes){
-            return(<p>....</p>);
+    getInitialState: function(){
+        return { state: 'loading' };
+    },
 
+    render: function(){
+        if(this.state.state === 'loading'){
+            // Initial loading bar
+            return(<div className="progress">
+                       <div className="progress-bar progress-bar-striped active" 
+                             role="progressbar" 
+                             style={{width: '33%', height: '10px'}}>
+                           <span className="sr-only"></span>
+                       </div>
+                   </div>);
+
+        } else if(this.state.state === 'error'){
+            // The API is probably down. Show a nice error message.
+            return(<div className="container"><div style={{paddingLeft: '30px', paddingTop: '90px'}}> 
+                       There was an error loading the application. Please try again later.<br/>
+                       <span style={{color: '#dddddd', fontSize: 'small'}}>{this.state.errorMessage}</span>
+                   </div></div>);
         } else {
+            // Loading complete
+
             // FIXME: this is static data; arrange so that all components
-            // can access it in a sensible way w/o passing it in properties
-            window.metadata = this.state.metadata;
-            window.columns = this.state.columns;
-            window.visibleColumns = this.state.visibleColumns;
+            // can access it in a sensible way w/o passing it around in properties
+            window.metadata        = this.state.metadata;
+            window.columns         = this.state.columns;
+            window.visibleColumns  = this.state.visibleColumns;
             window.distinctProperties = {
                 merkkiSelvakielinen: this.state.makes
             };
@@ -36,11 +58,13 @@ var BootLoader = React.createClass({
 
     componentDidMount: function(){
         // Load metadata from the server and process it.
+
         // FIXME: use a sane async library instead of callback pyramids
-        var that = this;
 
         // Load columns
-        jQuery.ajax('/js/columns.json', {
+        var that = this;
+        var path = '/js/columns.json';
+        jQuery.ajax(path, {
             dataType: 'json',
             success: function(columnsResponse){
                 var columns = columnsResponse.sort(function(a, b){
@@ -50,7 +74,8 @@ var BootLoader = React.createClass({
                 });
 
                 // Load metadata
-                jQuery.ajax('/js/metadata.json', {
+                path = '/js/metadata.json';
+                jQuery.ajax(path, {
                     dataType: 'json',
                     success: function(metadata){
                         
@@ -80,18 +105,39 @@ var BootLoader = React.createClass({
                         }
 
                         // Load car makes
-                        jQuery.ajax('/api/v1.0/vehicles/propertyDistinct/merkkiSelvakielinen', {
+                        path = '/api/v1.0/vehicles/propertyDistinct/merkkiSelvakielinen';
+                        jQuery.ajax(path, {
                             dataType: 'json',
                             success: function(makes){
+                                // All done, start the application
                                 that.setState({
+                                    state: 'done',
                                     metadata: metadata,
                                     columns: columns,
                                     visibleColumns: visibleColumns,
                                     makes: makes
                                 });
+                            },
+                            error: function(jqXHR, textStatus, errorThrown){
+                                that.setState({
+                                    state: 'error',
+                                    errorMessage: path + ': ' + jqXHR.status + ' ' + errorThrown
+                                });
                             }
                         });
+                    },
+                    error: function(jqXHR, textStatus, errorThrown){
+                        that.setState({
+                            state: 'error',
+                            errorMessage: path + ': ' + jqXHR.status + ' ' + errorThrown
+                        });
                     }
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                that.setState({
+                    state: 'error',
+                    errorMessage: path + ': ' + jqXHR.status + ' ' + errorThrown
                 });
             }
         });
@@ -244,7 +290,7 @@ var VehicleDataApp = React.createClass({
         // JSON.stringify(newParams.find)
 
         // Show progress bar
-        this.setState({ loading: true, progressBarValue: 50 });
+        this.setState({ loading: true, progressBarValue: 66 });
 
         // Start Ajax request
         jQuery.ajax({
@@ -340,7 +386,6 @@ var VehicleDataApp = React.createClass({
         jQuery('#search_ui_show_btn').hide();
         jQuery('#search_ui_hide_btn').show();
         VehicleDataApp.resize();
-
     },
     
     /*
@@ -452,7 +497,7 @@ var VehicleDataApp = React.createClass({
 var ProgressBar = React.createClass({
     render: function(){
         return(
-            <div id={this.props.id} className="progress">
+            <div id={this.props.id} className="progress"  style={{backgroundColor: 'rgba(0,0,0,0)'}}>
                 <div className="progress-bar progress-bar-striped active" 
                      role="progressbar" 
                      style={{width: ('' + this.props.value + '%')}}
@@ -466,6 +511,9 @@ var ProgressBar = React.createClass({
     },
 
     componentDidUpdate: function(prevProps, prevState){
+        // Don't obscure the top menu
+        //jQuery('#' + this.props.id).css({'visibility': (this.props.visible ? 'visible' : 'hidden')});
+
         if(this.props.visible && ! prevProps.visible){
             jQuery('#' + this.props.id + ' .progress-bar').show();
 
@@ -483,8 +531,17 @@ var MainHeader = React.createClass({
     render: function(){
         return(
             <div id="navbar_row" className="row">
-                <div className="col-md-12">
-                    <nav className="well well-sm">vehicledata.fi</nav>
+                <div className="col-md-11">
+                    <nav className="well well-sm" style={{borderRadius: '0px', paddingLeft: '20px'}}>
+                        vehicledata.fi
+                    </nav>
+                </div>
+                <div className="col-md-1">
+                    <nav className="well well-sm" 
+                         style={{borderRadius: '0px', textAlign: 'center'}}>
+                        <a href="http://ppar.github.io/trafi-opendata/" 
+                           style={{color: '#000000', fontSize: 'smaller'}}>About</a>
+                     </nav>
                 </div>
             </div>
         );
