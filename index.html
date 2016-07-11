@@ -3,10 +3,12 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Trafi-opendata by ppar</title>
+    <title>Trafi-opendata</title>
 
-    <link rel="stylesheet" href="https://github.com/themes/minimal/stylesheets/styles.css">
-    <link rel="stylesheet" href="https://github.com/themes/minimal/stylesheets/github-light.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/github-light.css">
+    <script src="/js/scale.fix.js"></script>
+
     <meta name="viewport" content="width=device-width">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -16,190 +18,194 @@
     <div class="wrapper">
       <header>
         <h1>Trafi-opendata</h1>
-        <p>API and web interface to query trafi.fi&#39;s open vehicle registration data</p>
+        <p>API and web interface to Finnish open vehicle registration data</p>
 
-        <p class="view"><a href="https://github.com/ppar/trafi-opendata">View the Project on GitHub <small>ppar/trafi-opendata</small></a></p>
-
-
-        <!-- ul>
-          <li><a href="https://github.com/ppar/trafi-opendata/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/ppar/trafi-opendata/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/ppar/trafi-opendata">View On <strong>GitHub</strong></a></li>
-        </ul -->
+        <p class="view"><b>Live version:</b> <a href="http://vehicledata.fi/">vehicledata.fi</a></p>
+        <p class="view"><b>Source:</b> <a href="https://github.com/ppar/trafi-opendata">github.com/ppar/trafi-opendata</a></p>
+        <p class="view"><b>Contact:</b> <a href="https://github.com/ppar">github.com/ppar</a></p>
       </header>
+
       <section>
-        <h2>
-<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h2>
+        <h2><a id="what" class="anchor" href="#what"></a>What</h2>
 
-<p>JSON API and a web interface for accessing open vehicle registration
-data released by <a href="Trafi">http://www.trafi.fi/</a>, the Finnish Transport
-Safety Agencey.</p>
+        <p>JSON API and a web interface for accessing open vehicle registration
+          data released by <a href="Trafi">http://www.trafi.fi/</a>, the Finnish Transport
+          Safety Agencey.</p>
 
-<h2>
-<a id="motivation" class="anchor" href="#motivation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Motivation</h2>
+        <h2><a id="why" class="anchor" href="#why"></a>Why</h2>
+        <p>
+          I wrote this thing mostly to get acquainted with NodeJS and some modern UI framework. Also, 
+          there was no practical interface to this data available until now, so some car hobbyists and 
+          vehicle register enthusiasts(!) might even find the service useful.
+        </p>
 
-<p>This is my first project using Node.js <del>and
-<a href="MongoDB">https://www.mongodb.com/</a></del>. I wrote this mostly
-to teach myself these technologies, having more or less lived in PHP/MySQL
-land previously. As such, the implementation choices and code should
-be taken with a grain of salt.</p>
+        <h2><a id="implementation" class="anchor" href="#implementation"></a>Implementation</h2>
 
-<h2>
-<a id="implementation" class="anchor" href="#implementation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Implementation</h2>
+        <p>
+          The JSON API runs on <a href="http://nodejs.org/">Node.js</a> and 
+          <a href="http://expressjs.com/">Express.js</a> and provides a simple read-only interface to a 
+          single 5+M row table stored in <a href="http://mariadb.org/">MariaDB</a>/MySQL.
+        </p>
+        <p>
+          There is experimental support for using a MongoDB 
+          backend instead of MySQL (with Mongoose), but MongoDB proved to have unacceptable performance 
+          early on during development.
+        </p>
 
-<p>The JSON API runs on Node.js and <a href="Express.js">http://expressjs.com/</a>.
-There is working support for a MySQL/MariaDB backend and 
-experimental support for MongoDB. MongoDB proved to have horrible
-performance during development, even when with trivial queries over
-indexed fields, so MySQL/MariaDB is the meaningful choice for the moment. </p>
+        <p>
+          The Web interface uses <a href="https://facebook.github.io/react/">React</a> as the base 
+          framework, jQuery and the wonderful <a href="http://querybuilder.js.org/">jQueryQueryBuilder</a> 
+          plugin for widget-level things and <a href="http://getbootstrap.com/">Bootstrap</a> for managing
+          the layout.
+        </p>
+          
+        <p>Python scripts are used to normalize and import the CSV data provided by Trafi.</p>
 
-<p>The MongoDB backend uses <a href="Mongoose">http://mongoosejs.com/</a> and
-<a href="mongoose-paginate">https://github.com/edwardhotchkiss/mongoose-paginate</a>. </p>
+        <h2><a id="data" class="anchor" href="#data"></a>Performance</h2>
+        <h3><a id="mariadb" class="anchor" href="#mariadb"></a>MariaDB/MySQL</h3>
+        <p>
+          When imported into MariaDB/MySQL, with all columns indexed and MongoDB's silly 
+          foobar_UPPER columns still in place,
+          the binary InnoDB table takes only a "modest" 6 GB on disk. Without the
+          junk columns, the 800 MB of original raw CSV translates to a ~3.4 GB InnoDB table, 
+          indexes included.
+        </p>
+        <p>
+          Trivial queries hitting indexes and/or queries where an indexed column significantly 
+          reduces the # of seekable rows (like selecting a specific car make) perform quite
+          well. Substring queries causing long disk seeks are still painfully slow.
+        </p>          
 
-<p>The MySQL backend uses <a href="https://github.com/felixge/node-mysql">https://github.com/felixge/node-mysql</a> .</p>
+        <h3><a id="mongodb" class="anchor" href="#mongodb"></a>MongoDB</h3>
+        <p>
+          Importing the ~ 800 MB CSV file consumes ~ 8 GB in MongoDB without
+          indexes. With single-column indexes, the database bloats up to 12-14 GB.
+        </p>
 
-<p>Python scripts are used to import and normalize the data
-provided by Trafi.</p>
+        <p>Even with indexes in place, queries like</p>
 
-<p>The WWW interface is built on Bootstrap, jQuery, the excellent
-<a href="jQuery%20QueryBuilder">http://querybuilder.js.org/demo.html</a>,
-<a href="bs_grid">http://www.pontikis.net/labs/bs_grid/</a> datagrid and
-a plethora of dependent JavaScript modules.</p>
+        <pre><code>{ $and: [ { prop0: 'FOO' }, { prop0: 'BAR' } ] }</code></pre>
 
-<h2>
-<a id="implementation-issues" class="anchor" href="#implementation-issues" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Implementation issues</h2>
+        <p>
+          use plain seeking instead of index + seek and take forever to execute. To add
+          insult to injury, MongoDB 2.6 can't explain() queries without
+          executing them first. MongoDB 3.x would seem to have a better explain()
+          feature without this problem.
+        </p>
 
-<h3>
-<a id="data" class="anchor" href="#data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Data</h3>
+        <p>
+          MongoDB can't do case-insensitive searches over indexed fields; you have to resort
+          to tricks like shadow foobar_UPPER columns instead, which adds to database bloat
+          and obviously reduces disk cache efficiency.
+        </p>
 
-<p>Importing the ~ 800 MB CSV file consumes ~ 8 GB in MongoDB, without
-indexes. With single-column indexes, the database takes 12-14 GB.</p>
+        <h2><a id="data-set" class="anchor" href="#data-set"></a>Data Set</h2>
 
-<p>Even with indexes in place, queries like</p>
+        <p>
+          Trafi publishes quarterly releases of anonymized open data on registered land 
+          vehicles, boats and ships. This project initially focuses on vehicle data.
+        </p>
 
-<pre><code>  { $and: [ { prop0: 'FOO' }, { prop0: 'BAR' } ] }
-</code></pre>
+        <p>Current original data releases are available at</p>
+        <ul>
+          <li><a href="http://www.trafi.fi/tietopalvelut/avoin_data">http://www.trafi.fi/tietopalvelut/avoin_data</a></li>
+          <li><a href="http://www.trafi.fi/en/services/open_data">http://www.trafi.fi/en/services/open_data</a></li>
+        </ul>
 
-<p>use seeking instead of indexes and take forever to execute. To add
-insult to injury, MongoDB 2.6 can't explain() queries without
-executing them first. MongoDB 3.x would seem to have a better explain()
-feature without this problem. </p>
+        <p>
+          Vehicle data has been released since 2014. Release history is not available on Trafi's 
+          website, but thanks to archive.org, can be found in 
+          <a href="https://github.com/ppar/trafi-opendata/blob/master/trafi-data-releases.txt"
+             >/trafi-data-releases.txt</a> in the GitHub repo.
+        </p>
 
-<p>For comparison, when imported into a MariaDB/MySQL InnoDB table,
-with all columns indexed and with shadow "foo_UPPER" columns added
-(a workaround for of MongoDB's lack of case insensitive indexes),
-the binary data takes only a "modest" 6 GB on disk.</p>
+        <h3><a id="dataissues" class="anchor" href="#dataissues"></a>Issues</h3>
 
-<h3>
-<a id="ui" class="anchor" href="#ui" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>UI</h3>
+        <p>The provided data set presents some difficulties, such as:</p>
+        
+        <h4>Inconsistent data</h4>
+    
+        <p>Vehicle make and model are freetext fields.</p>
 
-<p>Currently, the web UI is a mess of JavaScript. Some refactoring is
-needed to make the code maintainable and neat.</p>
+        <p>'O's are spelled as zeroes, duplicates are rife, etc.</p>
 
-<h2>
-<a id="data-set" class="anchor" href="#data-set" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Data Set</h2>
+        <p>As a result of individual officials typing (and mistyping) entries
+          into various registers over the course of decades, there is no
+          consistent way to identify vehicle brands and models in the data.</p>
 
-<p>Trafi publishes anonymized open data on registered land vehicles,
-boats and ships. This project initially focuses on vehicle data.
-For background, see</p>
+        <p>There are vehicles with 4000+ liter engine displacements because 
+          someone forgot to move the commma</p>
 
-<ul>
-<li><a href="http://www.trafi.fi/tietopalvelut/avoin_data">http://www.trafi.fi/tietopalvelut/avoin_data</a></li>
-<li><a href="http://www.trafi.fi/en/services/open_data">http://www.trafi.fi/en/services/open_data</a></li>
-</ul>
+        <h4>Varying dates</h4>
 
-<p>The provided data set presents some difficulties, such as:</p>
+        <p>Earlier registrations only contain the registration year, some entries
+            contain no date fields, others a full date</p>
 
-<p>Lack of "decommissioned" vehicles</p>
+        <h4>Lack of temporarily decommissioned vehicles</h4>
 
-<ul>
-<li>Only vehicles with "commissioned for road use" status are incuded
-in Trafi's quarterly data dump.</li>
-<li>It's common for e.g. owners of hobbyist vehicles to temporarily
-decommission their cars when they're not being used in order to
-save on insurance and taxes, so each released data set contains
-only a semi-random snapshot of the vehicles that in fact see regular
-use.</li>
-<li>Continuously merging all released data sets from Trafi would allow
-us to slightly improve coverage, but this is far from
-perfect. Because the data is anonymized, a method of identifying
-individual vehicles across datasets and avoiding duplicates would
-need to be developed.</li>
-<li>Ideally, Trafi should release more complete data sets: one with all
-known vehicles, and another one with all vehicles that have been
-road-commissioned e.g. within the last five years.</li>
-</ul>
+        <p>Only vehicles with "commissioned for road use" status are incuded
+          in Trafi's quarterly data dump.</p>
 
-<p>Inconsistent data</p>
+        <p>It's common for owners of hobbyist vehicles to temporarily
+          decommission their cars when they're not being used in order to
+          save on insurance and taxes, so each released data set contains
+          only a semi-random snapshot of the vehicles that, in fact, do see 
+          regular use. This is even more tragic for someone more interested in
+          <a href="http://www.curbsideclassic.com/wp-content/uploads/2012/09/1957-DeSoto-Ad-051.jpg"
+             >1957 DeSotos</a> than the annual rates of Nissan vs. VW registrations
+        </p>
 
-<ul>
-<li>Vehicle make and model are freetext fields</li>
-<li>As a result of individual officials typing (and mistyping) entries
-into various registers over the course of several decades, there is no
-consistent way to identify vehicle brands and models in the data.</li>
-<li>'O's are spelled as zeroes, duplicates are rife, etc.</li>
-<li>Some motors have 4000+ liter displacements because someone forgot to
-move the commma</li>
-</ul>
-
-<p>Varying dates</p>
-
-<ul>
-<li>Earlier entries only contain the registration year, some entries
-contain no date fields, others a full date</li>
-</ul>
-
-<h2>
-<a id="ideas" class="anchor" href="#ideas" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ideas</h2>
-
-<ul>
-<li><p>Makes and models should be normalized</p></li>
-<li><p>If identifying vehicles across data sets is doable, it would be
-interesting to bookmark your own vehicle and follow it's mileage,
-location and other data over time. This might be at odds with
-Trafi's goal of providing only anonymized data, although
-anonymization is meant to cover owners of vehicles, instead of the
-the vehicles themselves.</p></li>
-</ul>
+        <p>Continuously merging all released data sets from Trafi would allow
+          us to slightly improve coverage, but this is far from
+          perfect. Because the data is anonymized, a method of identifying
+          individual vehicles across datasets and avoiding duplicates would
+          need to be developed.</p>
+        <p>Ideally, Trafi should release more complete data sets: one with all
+          known vehicles, and another one with all vehicles that have been
+          road-commissioned e.g. within the last five years.</p>
 
 
-<h2>
-<a id="acknowledgements" class="anchor" href="#acknowledgements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Acknowledgements</h2>
+        <h2><a id="ideas" class="anchor" href="#ideas"></a>Development ideas</h2>
 
-<p>The following tutorials and blog posts were vital in getting this
-thing afloat.</p>
+        <p>Makes and models should be normalized and described in DB relations</p>
 
-<ul>
-<li><a href="https://www.mongodb.com/blog/post/building-your-first-application-mongodb-creating-rest-api-using-mean-stack-part-1">https://www.mongodb.com/blog/post/building-your-first-application-mongodb-creating-rest-api-using-mean-stack-part-1</a></li>
-<li><p><a href="https://github.com/ctindel/reader/tree/master/api.old/v1.0">https://github.com/ctindel/reader/tree/master/api.old/v1.0</a></p></li>
-<li><p><a href="http://singlepageappbook.com/">http://singlepageappbook.com/</a></p></li>
-<li><a href="https://blog.risingstack.com/node-hero-tutorial-getting-started-with-node-js/">https://blog.risingstack.com/node-hero-tutorial-getting-started-with-node-js/</a></li>
-<li><a href="https://docs.mongodb.com/getting-started">https://docs.mongodb.com/getting-started</a></li>
-</ul>
+        <p>
+          If identifying vehicles across data sets is doable, it would be
+          interesting to find your own vehicle and follow it's mileage,
+          location and other data over time.
+          Trafi's objective is to provide only anonymized data, but it stands
+          to reason that the anonymization is meant to protect the vehicles' 
+          owners' privacy, not that of the vehicles themselves.
+        </p>
 
-<h2>
-<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+        <p>
+          Data could be crosslinked with other open databases, e.g. the 
+          Customs Office's decisions on levies and questionable non-VAT VAT
+          charges.
+        </p>
 
-<h3>
-<a id="code" class="anchor" href="#code" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Code</h3>
+        <h2><a id="license" class="anchor" href="#license"></a>License</h2>
 
-<p>TBD. It's Open Source. I'm a coder, Jim, not a lawyer.</p>
+        <h3><a id="code" class="anchor" href="#code"></a>Code</h3>
 
-<h3>
-<a id="metadata" class="anchor" href="#metadata" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Metadata</h3>
+        <p>TBD. It's Open Source. I'm a coder, Jim, not a lawyer.</p>
 
-<p>The files ./metadata.json, ./www/public/js/columns.json and all files under ./schema are derived 
-from the "Description of data content" (17629-avoin_data_ajoneuvojen_luokitukset.xls) part of "Open 
-data for vehicles 4.5", released by Trafi.fi on 8 th of April 2016 at 
-<a href="http://www.trafi.fi/en/services/open_data">http://www.trafi.fi/en/services/open_data</a> under the "Creative Commons Attribution 
-4.0 International (CC BY 4.0)" license: <a href="http://creativecommons.org/licenses/by/4.0/deed.en">http://creativecommons.org/licenses/by/4.0/deed.en</a></p>
+        <h3><a id="metadata" class="anchor" href="#metadata"></a>Metadata</h3>
+
+        <p>
+          The files <em>metadata.json</em>, <em>www/public/js/columns.json</em> and all files 
+          under <em>schema/</em> are derived from the "Description of data content" document 
+          (<em style="white-space: nowrap;">17629-avoin_data_ajoneuvojen_luokitukset.xls</em>),
+          released by Trafi.fi on 8 th of April 2016 as part of <em>"Open data for vehicles 4.5"</em>
+          at  <a href="http://www.trafi.fi/en/services/open_data"
+             >http://www.trafi.fi/en/services/open_data</a> under the <em>"Creative Commons Attribution
+          4.0 International (CC BY 4.0)"</em> license: 
+          <a href="http://creativecommons.org/licenses/by/4.0/deed.en"
+             >http://creativecommons.org/licenses/by/4.0/deed.en</a></p>
       </section>
       <footer>
-        <p>This project is maintained by <a href="https://github.com/ppar">ppar</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
-    <script src="https://github.com/themes/minimal/javascripts/scale.fix.js"></script>
     
   </body>
 </html>
