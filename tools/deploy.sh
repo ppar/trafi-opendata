@@ -25,19 +25,18 @@ curl -L -O http://ppar-trafi-opendata.s3-website-eu-west-1.amazonaws.com/vehicle
 sudo tar -xpzv -f var_lib_mysql.tar.gz -C /
 sudo systemctl start mysql
 
-curl -L -O https://github.com/ppar/trafi-opendata/archive/master.zip
-unzip master.zip
+git clone https://github.com/ppar/trafi-opendata.git
 
-sudo cp trafi-opendata-master/www/conf/nginx_virtualhost.conf /etc/nginx/conf.d/vehicledata.conf
+sudo cp trafi-opendata/www/conf/nginx_virtualhost.conf /etc/nginx/conf.d/vehicledata.conf
 sudo rm /etc/nginx/sites-enabled/default
-sudo sed -i 's|<INSTALL-DIR>|/home/ubuntu/trafi-opendata-master|g' /etc/nginx/conf.d/vehicledata.conf
+sudo sed -i 's|<INSTALL-DIR>|/home/ubuntu/trafi-opendata|g' /etc/nginx/conf.d/vehicledata.conf
 sudo systemctl restart nginx 
 
-cd trafi-opendata-master/www
+cd trafi-opendata/www
 bower install
 cd -
 
-cd trafi-opendata-master/json-api
+cd trafi-opendata/json-api
 cp config/db.js.example config/db.js
 npm install
 
