@@ -1,20 +1,39 @@
-// == Modules ================================
+/**
+ * MongoDB Backend module
+ *
+ * @module   app/mongoDBBackend
+ */
+
+// Modules
 var mongoose          = require('mongoose');
 var mongoosePaginate  = require('mongoose-paginate');
+//var logger            = require('./logger');
 
-// == State ==================================
-var metadata           = null;
+// Configuration & state
+var metadata          = require('../../metadata');
+var dbConfig          = require('../config/db');
+var mysqlConn         = null;
+var apiCalls          = {};
 
-// == Initialization =========================
-exports.init = function(_metadata, dbConfig){
-    metadata = _metadata;
-    
+
+/**
+ * Initialization function
+ *
+ * Connects to the MongoDB database specified in dbConfig
+ */
+exports.init = function(){
     mongoose.connect(dbConfig.mongoDbUrl);
     mongoose.set('debug', true);
 };
 
-// == API handler ============================
-exports.setApiRoutes = function(app, apiRouter){
+
+/**
+ * Map handler functions to the API router
+ *
+ * @param  {object} router   - Express Router object
+ * @return {object} The passed router object, with route handlers attached
+ */
+exports.setRoutes = function(router){
 
     // ----------------------------------------------
     // Create schemas and models
@@ -81,7 +100,7 @@ exports.setApiRoutes = function(app, apiRouter){
     //     pages: 501744
     //  }
     //
-    apiRouter.get('/vehicles/list', function(req, res) {
+    router.get('/vehicles/list', function(req, res) {
         console.log('== GET /vehicles/list ===============================');
         console.log('HTTP query params:');
         console.log(req.query);
@@ -169,7 +188,7 @@ exports.setApiRoutes = function(app, apiRouter){
     // ----------------------------------------------
     // Get a list of distinct values for a given column.
     //
-    apiRouter.get('/vehicles/propertyDistinct/:colName', function(req, res) {        
+    router.get('/vehicles/propertyDistinct/:colName', function(req, res) {
         // Check that the column exists, otherwise MongoDB will just seek through all records.
         // Could probably ask this from the Mongoose model/schema too
         if(! metadata.vehicles.columns[req.params.colName]){
@@ -197,7 +216,7 @@ exports.setApiRoutes = function(app, apiRouter){
 
     // ----------------------------------------------
     // Statistics - TODO: set long cache time
-    apiRouter.get('/vehicles/aggregate', function(req, res) {
+    router.get('/vehicles/aggregate', function(req, res) {
         console.log('GET /vehicles/aggregate');
         //logger.debug('Router for /vehicles/aggregate');
         // 
@@ -206,7 +225,7 @@ exports.setApiRoutes = function(app, apiRouter){
     // ----------------------------------------------
     // Properties of single vehicle
     // http://localhost:3000/api/v1.0/vehicles/5740d30bfa5bd80d9538a977/properties
-    apiRouter.get('/vehicles/:vehicleID/properties', function(req, res) {
+    router.get('/vehicles/:vehicleID/properties', function(req, res) {
         console.log('GET /vehicle/:vehicleID/properties');
         // Variables
         var vehicleID = req.params.vehicleID;
@@ -282,7 +301,7 @@ exports.setApiRoutes = function(app, apiRouter){
 
     // ----------------------------------------------
     // Something
-    //apiRouter.put('/feeds/subscribe', stormpath.apiAuthenticationRequired, function(req, res) {
+    //router.put('/feeds/subscribe', stormpath.apiAuthenticationRequired, function(req, res) {
     //    //logger.debug('Router for /feeds');
     //});
 
@@ -290,5 +309,5 @@ exports.setApiRoutes = function(app, apiRouter){
 
     //app.use('/api/v1.0', router);
 
-    return apiRouter;
+    return router;
 };

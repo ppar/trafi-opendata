@@ -2,41 +2,44 @@
  * MySQL Backend module
  *
  * @module   app/mysqlBackend
- * @see      module:app/routes
  */
 
-// == Modules ================================
+// Modules
 var mysql             = require('mysql');
 var async             = require('async');
-var apiCalls          = {};
+var logger            = require('./logger');
 
-// == State ==================================
-var mysqlConn         = null;
+// Configuration & state
 var metadata          = require('../../metadata');
-var dbConfig          = null;
+var dbConfig          = require('../config/db');
+var mysqlConn         = null;
+var apiCalls          = {};
 
 /**
  * Initialization function
  *
  * Connects to the MySQL database specified in dbConfig
- *
- * @param {object}    dbConfig   Database configuratio object from config/db.js.
  */
-exports.init = function(_dbConfig){
-    dbConfig = _dbConfig;
+exports.init = function(){
     mysqlConn = mysql.createConnection(dbConfig.mysql);
     mysqlConn.connect();
 };
 
 /**
- * Dump a variable using console.log()
+ * Map handler functions to the API router
+ *
+ * @param  {object} router   - Express Router object
+ * @return {object} The passed router object, with route handlers attached
  */
-logVariable = function(message, variable){
-    console.log('--- ' + message + ' ---- ' + typeof variable + ' -----------------------------');
-    console.log(variable)
-    console.log('--- /' + message + ' ------------------------------------------');
-    console.log();
-}
+exports.setRoutes = function(router){
+    router.get('/vehicles/:vehicleID/properties', apiCalls.vehicleProperties);
+    router.get('/vehicles/list', apiCalls.list);
+    router.get('/vehicles/propertyDistinct/:colName', apiCalls.propertyDistinct);
+    router.get('/vehicles/aggregate', apiCalls.aggregate);
+
+    return router;
+};
+
 
 /**
  * Generate an SQL WHERE clause from the 'find' JSON object
@@ -51,10 +54,10 @@ logVariable = function(message, variable){
  *                  were passed.
  */
 findObjectToWhereClause = function(find){
-    logVariable('findObjectToWhereClause(): find', find);
+    //logger.logVariable('findObjectToWhereClause(): find', find);
 
     if(!find || !find['ru'] || !find['ru'].length){
-        console.log('findObjectToWhereClause(): empty parameters')
+        //console.log('findObjectToWhereClause(): empty parameters')
         return '';
     }
 
@@ -152,7 +155,7 @@ findObjectToWhereClause = function(find){
                         break;
                 }
 
-                // FAIL!
+                // FAIL
                 throw new Error('Unknown operator');
             }
         }
@@ -192,22 +195,22 @@ sortObjectToOrderClause = function(sort){
 /**
  * API Call: Get properties of single vehicle
  *
- * Example:
- * http://localhost:3000/api/v1.0/vehicles/5740d30bfa5bd80d9538a977/properties
+ * Example:http://localhost:3000/api/v1.0/vehicles/12345/properties
  *
- * @param {object}  req                      - Request object passed by the Express Router
- * @param {object}  res                      - Result object passed by the Express Router
- * @param {string}  req.params.vehicleID     - ID of the vehicle
+ * The method's 'req' and 'res' parameters are the Request and Response objects
+ * passed by the Express Router.
+ *
+ * @param {string}  params.vehicleID     - ID of the vehicle, passed in the HTTP GET 
+ *                                         request's last path component
  */
 apiCalls.vehicleProperties = function(req, res) {
-    console.log('== GET /vehicles/:vehicleID/properties ==============================');
     // Variables
     var vehicleID = req.params.vehicleID;
+    console.log('vehicleProperties(' + vehicleId + ')');
 
     // Query
     var sqlQuery = mysql.format('SELECT * FROM ?? WHERE id = ?', ['vehicle', vehicleId]);
     mysqlConn.query(sqlQuery, function(mysqlError, mysqlResult, mysqlFields){
-        console.log('QUERY COMPLETE: ' + sqlQuery);
 
         // 500
         if(mysqlError){
@@ -249,25 +252,26 @@ apiCalls.vehicleProperties = function(req, res) {
  * page 1 is returned instead. The JSON response contains the actual returned page
  * number.
  *
+ * Parameters described below refer to HTTP GET variables under req.request[]
+ *
+ * The method's 'req' and 'res' parameters are the Request and Response objects
+ * passed by the Express Router.
  * 
- * @param  {object}  req                 - Request object passed by the Express Router
- * @param  {object}  res                 - Result object passed by the Express Router
+ * @param  {object}  find      - Search parameters as a JSON-serialized object. 
+ *                               Default: {} -- return all records 
+ *                               Format: @see findObjectToWhereClause 
+ * @param  {object}  sort      - Sort order; [ { c: 'merkkiSelvakielinen', d: 'ASC'}, { c: 'korityyppi', d: 'DESC' }, ... ]
+ * @param  {int}     page      - Number of page to return (default 1)
+ * @param  {int}     limit     - Number of items per page (default 10)
+ * @param  {object}  columns   - List of columns to return the result. Default: all
+ * @param  {string}  format    - Format of the response
  *
- * @param  {object}  req.query.find      - Search parameters as a JSON-serialized object. 
- *                                         Default: {} -- return all records 
- *                                         Format: @see findObjectToWhereClause 
- * @param  {object}  req.query.sort      - Sort order; [ { c: 'merkkiSelvakielinen', d: 'ASC'}, { c: 'korityyppi', d: 'DESC' }, ... ]
- * @param  {int}     req.query.page      - Number of page to return (default 1)
- * @param  {int}     req.query.limit     - Number of items per page (default 10)
- * @param  {object}  req.query.columns   - List of columns to return the result. Default: all
- * @param  {string}  req.query.format    - Format of the response
- *
- * @param  {string}  req.query.respDocs  - Override the name of the 'docs'  property in the response JSON
- * @param  {string}  req.query.respTotal - Override the name of the 'total' property in the response JSON
- * @param  {string}  req.query.respLimit - Override the name of the 'limit' property in the response JSON
- * @param  {string}  req.query.respPage  - Override the name of the 'page'  property in the response JSON
- * @param  {string}  req.query.respPages - Override the name of the 'pages' property in the response JSON
- * @param  {string}  req.query.respFull  - Override the name of the 'full'  property in the response JSON
+ * @param  {string}  respDocs  - Override the name of the 'docs'  property in the response JSON
+ * @param  {string}  respTotal - Override the name of the 'total' property in the response JSON
+ * @param  {string}  respLimit - Override the name of the 'limit' property in the response JSON
+ * @param  {string}  respPage  - Override the name of the 'page'  property in the response JSON
+ * @param  {string}  respPages - Override the name of the 'pages' property in the response JSON
+ * @param  {string}  respFull  - Override the name of the 'full'  property in the response JSON
  *    
  * @return {object|string} 
  * 
@@ -303,8 +307,8 @@ apiCalls.vehicleProperties = function(req, res) {
  */
 
 apiCalls.list = function(req, res) {
-    console.log('== GET /vehicles/list ===============================');
-    logVariable('list(): req.query', req.query);
+    console.log('list()');
+    logger.logVariable('list()', req.query);
 
     // Pagination options
     var page  = parseInt(req.query.page)  || 1;
@@ -423,7 +427,6 @@ apiCalls.list = function(req, res) {
             res.status(resultStatus);
         }
         res.json(resultJSON);
-        console.log('------------------------------------------------------------------');
     });
 };
 
@@ -434,18 +437,19 @@ apiCalls.list = function(req, res) {
  * Returns a list of distinct values in a given column, optionally restricting the
  * query to rows matched by the 'find' parameter.
  *
- * @param  {object}  req                 - Request object passed by the Express Router
- * @param  {object}  res                 - Result object passed by the Express Router
- * @param  {object}  req.query.find      - Search parameters as a JSON-serialized object. 
- *                                         Only values from rows matching this parameter are
- *                                         returned. Default: {} -- all records 
+ *
+ * @param  {object}  req.query.find      - Parameter "find" in the HTTP GET request. Search parameters 
+ *                                         as a JSON-serialized object. Only values from rows matching 
+ *                                         this parameter are returned. Default: {} -- all records.
  *                                         Format: @see findObjectToWhereClause
- * @param  {string}  req.params.colName  - Name of the column
+ *
+ * @param  {string}  req.params.colName  - Name of the column, passed as the last path component in the  
+ *                                         HTTP GET request (/vehicles/propertyDistinct/:colName)
  *
  * @return {object}  List of distinct values in column colName
  */
 apiCalls.propertyDistinct = function(req, res) {
-    console.log('== GET /vehicles/propertyDistinct/:colName ==============================');
+    console.log('propertyDistinct(' + req.params.colName + ')');
 
     // Check that the column exists
     if(! metadata.vehicles.columns[req.params.colName]){
@@ -462,11 +466,7 @@ apiCalls.propertyDistinct = function(req, res) {
         + findObjectToWhereClause(req.query.find)
         + ' ORDER BY col ASC';
     
-    console.log('propertyDistinct: SQL: ' + sqlQuery);
-
     mysqlConn.query(sqlQuery, function(mysqlError, mysqlResult, mysqlFields){
-        console.log('QUERY COMPLETE: ' + sqlQuery);
-
         // 500
         if(mysqlError){
             res.status(500);
@@ -486,27 +486,10 @@ apiCalls.propertyDistinct = function(req, res) {
 
 
 /**
- * Statistics - TODO: set long cache time
+ * Statistics - TODO
  */
 apiCalls.aggregate = function(req, res) {
-    console.log('== GET /vehicles/aggregate ==============================');
+    console.log('GET /vehicles/aggregate');
 };
 
 
-/**
- * Map handler functions to the API router 
- * 
- * @param  {object} app        - Express App object
- * @param  {object} apiRouter  - Express Router object
- *
- * @return {object} The passed apiRouter object, with route handlers attached
- */
-exports.setApiRoutes = function(app, apiRouter){
-    apiRouter.get('/vehicles/:vehicleID/properties', apiCalls.vehicleProperties);
-
-    apiRouter.get('/vehicles/list', apiCalls.list);
-    apiRouter.get('/vehicles/propertyDistinct/:colName', apiCalls.propertyDistinct);
-    apiRouter.get('/vehicles/aggregate', apiCalls.aggregate);
-
-    return apiRouter;
-};

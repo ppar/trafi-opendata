@@ -1,58 +1,107 @@
 /**
- * Server module.
- *
- * This is the main application module. 
+ * The main application module. 
  *
  * @module  server
- * @see     module:app/routes
+ * @see     module:app/mysqlBackend
+ * @see     module:app/mongoDBBackend
  */
 
-// == External Modules ==================
-var express           = require('express');
-var bodyParser        = require('body-parser');
-var mysql             = null;
+// External Modules
+var express      = require('express');
+var bodyParser   = require('body-parser');
 
-// == Config =============================
-var dbConfig          = require('./config/db');
-//var metadata          = require('../metadata');
-//var security        = require('../config/security');
-var port              = 3000;
+//  Configuration
+var port         = 3000;
+var dbConfig     = require('./config/db');
 
-// == Local Modules ======================
-var routes            = require("./app/routes"); 
-//var logger          = require('../logger');
+/**
+ * Load and return the selected backend module
+ */
+var loadBackend = function(){
+    if(dbConfig.dbBackend == 'mongodb'){
+        return require('./app/mongoDBBackend');
+        
+    } else if(dbConfig.dbBackend == 'mysql'){
+        return require('./app/mysqlBackend');
+    }
 
+    throw ('API Backend unknown: "' + dbConfig.dbBackend + '"');
+};
 
-// == Initialization =====================
-var app = express();
+/**
+ * Constructs an Express App object
+ */
+var getExpressApp = function(){
+    var app = express();
+    var pathWildcard = '/*';
 
-// parse application/json 
-app.use(bodyParser.json({strict:false}));
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
-// parse application/vnd.api+json as json
-//app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
-// override with the X-HTTP-Method-Override header in the request. simulate DELETE/PUT
-//app.use(methodOverride('X-HTTP-Method-Override'));
+    // parse application/json 
+    app.use(bodyParser.json({strict:false}));
 
-// set the static files location /public/img will be /img for users
-//app.use(express.static(__dirname + '/public'));
+    // parse application/x-www-form-urlencoded
+    app.use(bodyParser.urlencoded({ extended: true }));
 
-//app.use(errorhandler)
+    // Set default Content-Type for all HTTP methods
+    app.get(pathWildcard, function(req, res, next) {
+        res.contentType('application/json');
+        next();
+    });
+    app.post(pathWildcard, function(req, res, next) {
+        res.contentType('application/json');
+        next();
+    });
+    app.put(pathWildcard, function(req, res, next) {
+        res.contentType('application/json');
+        next();
+    });
+    app.delete(pathWildcard, function(req, res, next) {
+        res.contentType('application/json');
+        next();
+    });
 
-// The actual API calls are here
-var apiRouter = routes.getApiRouter(app, dbConfig);
-app.use('/api/v1.0', apiRouter);
+    return app;
+};
 
-// Default route
-app.use(function(req, res, next){
-   res.status(404);
-   res.json({ error: 'Invalid URL' });
-});
+/**
+ * Main function
+ */
+var main = function(){
+    // Create Express App
+    var app = getExpressApp();
 
-// == Start App ============================
-app.listen(port);
-console.log('server.js: listening on: ' + port);
+    // Create Express Router
+    var router = express.Router();
+    
+    // Set a dummy response for the / path
+    router.get('/', function(req, res){
+        res.json({ message: 'API 1.0 operational' });
+    });
 
-// Expose app
-exports = module.exports = app;
+    // Load and initialize one of the backends
+    var backend = loadBackend();
+    backend.init(dbConfig);
+
+    // Connect actual routes to the backend
+    router = backend.setRoutes(router);
+
+    // Map API routes to this path
+    app.use('/api/v1.0', router);
+
+    // Set default route to 404
+    app.use(function(req, res, next){
+        res.status(404);
+        res.json({ error: 'Invalid URL' });
+    });
+
+    // Start Application
+    app.listen(port);
+    console.log('server.js: listening on: ' + port);
+
+    //
+    return app;
+};
+
+/*
+ * Expose application
+ */
+exports = module.exports = main();
