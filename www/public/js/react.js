@@ -3,38 +3,40 @@
  *
  * User interface for trafi-opendata application. 
  * 
- * NOTE: this was originally implemented in jQuery, hence some 
- * jQueryist conventions are still found in the code.
+ * NOTE: This was originally implemented in jQuery, so 
+ *       some jQueryisms are still present.
  */
 
 /**
  * Bootloader component. 
  *
- * Responsible for loading metadata from the server and 
- * creating the main application component.
+ * Responsible for displaying the initial progress bar, loading metadata
+ * from the server and instantiating the main application component.
  */
 var BootLoader = React.createClass({
+    // Initial state
     getInitialState: function(){
         return { state: 'loading' };
     },
 
+    // Render it
     render: function(){
         if(this.state.state === 'loading'){
             // Initial loading bar
-            return(<div className="progress">
+            return(<div id="bootloader_progress" className="progress">
                        <div className="progress-bar progress-bar-striped active" 
-                             role="progressbar" 
-                             style={{width: '33%', height: '10px'}}>
+                             role="progressbar" >
                            <span className="sr-only"></span>
                        </div>
                    </div>);
 
         } else if(this.state.state === 'error'){
             // The API is probably down. Show a nice error message.
-            return(<div className="container"><div style={{paddingLeft: '30px', paddingTop: '90px'}}> 
+            return(<div id="bootloader_error" className="container"><div> 
                        There was an error loading the application. Please try again later.<br/>
-                       <span style={{color: '#dddddd', fontSize: 'small'}}>{this.state.errorMessage}</span>
+                       <span>{this.state.errorMessage}</span>
                    </div></div>);
+
         } else {
             // Loading complete
 
@@ -56,6 +58,7 @@ var BootLoader = React.createClass({
         }
     },
 
+    // Load data & render again
     componentDidMount: function(){
         // Load metadata from the server and process it.
 
@@ -145,10 +148,16 @@ var BootLoader = React.createClass({
 });
 
 /**
- * Main Application Class
+ * Main Application Component
  *
  * Responsible for holding most (all) application state, coordinating state 
  * changes between various UI components and issuing Ajax queries to the server.
+ * 
+ * This class is kind of too big and spread out, but it's partly because the UI 
+ * views and DOM hierarchy don't map 1:1. Also this structure lets us isolate the
+ * filter query UI (or UIs, eventually) from the various views (table/map/...)
+ * 
+ * FWIW, metadata could live in its own class anyway.
  */
 var VehicleDataApp = React.createClass({
     /**
@@ -226,7 +235,9 @@ var VehicleDataApp = React.createClass({
         });
     },
     
-    //
+    /**
+     * Readjusts element sizes after we've rendered something
+     */
     componentDidUpdate: function(prevProps, prevState){
         VehicleDataApp.resize();
     },
@@ -240,7 +251,9 @@ var VehicleDataApp = React.createClass({
         this.loadResults({ find:  find });
     },
 
-    /** Receives new sort params from the TableView component */
+    /** 
+     * Receives new sort params from the TableView component 
+     */
     handleSortParamUpdate: function(sort){
         /***
             if(false){
@@ -253,12 +266,16 @@ var VehicleDataApp = React.createClass({
         this.loadResults({ sort: sort });
     },
 
-    /** Receives page number selection from the TabMenuBar component */
+    /** 
+     * Receives page number selection from the TabMenuBar component 
+     */
     handlePageParamUpdate: function(page){
         this.loadResults({ page: page });
     },
     
-    /** Receives limit (page size) selection from the TabMenuBar component */
+    /** 
+     * Receives limit (page size) selection from the TabMenuBar component 
+     */
     handleLimitParamUpdate: function(limit){
         this.loadResults({
             find:  this.state.findParam,
@@ -381,7 +398,7 @@ var VehicleDataApp = React.createClass({
      * Unhides the search UI
      */
     handleShowSearch: function(){
-        // FIXME: jQueryisms
+        // FIXME: remove jQuery, use component state instead
         jQuery('#search_ui_row').show();
         jQuery('#search_ui_show_btn').hide();
         jQuery('#search_ui_hide_btn').show();
@@ -395,7 +412,7 @@ var VehicleDataApp = React.createClass({
         /**
          * Handles window resize events
          * 
-         * FIXME: jQueryisms
+         * FIXME: remove jQueryisms, use component state correctly
          */
         resize: function(){
             var heightAdjustement = 20;
@@ -497,7 +514,7 @@ var VehicleDataApp = React.createClass({
 var ProgressBar = React.createClass({
     render: function(){
         return(
-            <div id={this.props.id} className="progress"  style={{backgroundColor: 'rgba(0,0,0,0)'}}>
+            <div id={this.props.id} className="progress">
                 <div className="progress-bar progress-bar-striped active" 
                      role="progressbar" 
                      style={{width: ('' + this.props.value + '%')}}
@@ -511,14 +528,12 @@ var ProgressBar = React.createClass({
     },
 
     componentDidUpdate: function(prevProps, prevState){
-        // Don't obscure the top menu
-        //jQuery('#' + this.props.id).css({'visibility': (this.props.visible ? 'visible' : 'hidden')});
-
+        // We need a slight delay before hiding to let the user's brain perceive the 
+        // final change, so visibility is handled here instead of render().
         if(this.props.visible && ! prevProps.visible){
             jQuery('#' + this.props.id + ' .progress-bar').show();
 
         } else if(! this.props.visible && prevProps.visible){
-            // Delay slightly so the user perceives the final change
             window.setTimeout(function(){ jQuery('#query_progress .progress-bar').hide(); }, 600);
         }
     }
@@ -553,7 +568,7 @@ var MainHeader = React.createClass({
  * 
  * Responsible for the jQueryQueryBuilder search UI and its adjacent buttons
  *
- * TBD: Simple Search UI
+ * TBD: Implement a simple search UI too
  * 
  * @param {function}   props.onQueryUpdate  - Callback to run when the search button is clicked
  */ 
@@ -598,7 +613,7 @@ var AdvancedSearch = React.createClass({
      * Hides the search UI
      */
     handleHideClick: function(e){
-        // FIXME: jQueryisms
+        // FIXME: remove jQuery, propagate state change to parent class instead
         jQuery('#search_ui_row').hide();
         jQuery('#search_ui_hide_btn').hide();
         jQuery('#search_ui_show_btn').show();
@@ -610,14 +625,14 @@ var AdvancedSearch = React.createClass({
      */
     handleSearchClick: function(e){
         var qbRules = jQuery('#search_ui').queryBuilder('getRules');
-        var scRules = QueryBuilder.scrubQuery(qbRules);
+        var scRules = QueryBuilder.compressQuery(qbRules);
         this.props.onQueryUpdate(scRules);
     }
 
 });
 
 /**
- * QueryBuilder widget in the Advanced Search -- app-specific
+ * QueryBuilder widget in the Advanced Search -- app-specific parts
  *
  * @param  {string} props.id  - DOM ID
  */
@@ -639,7 +654,7 @@ var QueryBuilder = React.createClass({
      */
     allEventsHandler: function(){
         // Make sure the rest of the UI reacts properly to the query UI changing its size. 
-        // FIXME: jQueryism
+        // FIXME: jQueryism; propagate state change to parent class(es)
         VehicleDataApp.resize();
     },
 
@@ -853,7 +868,7 @@ var QueryBuilder = React.createClass({
          * @param  {object} queryIn - A query object (or a its sub-object) from QueryBuilder
          * @return {object} Equivalent object with abbreviated identifiers.
          */
-        scrubQuery: function(queryIn){
+        compressQuery: function(queryIn){
             if(queryIn['condition'] && queryIn['rules']){
                 var queryOut = {
                     co: queryIn['condition'],
@@ -862,7 +877,7 @@ var QueryBuilder = React.createClass({
 
                 for(var i in queryIn['rules']){
                     // Recurse
-                    queryOut['ru'][i] = this.scrubQuery(queryIn['rules'][i]);
+                    queryOut['ru'][i] = this.compressQuery(queryIn['rules'][i]);
                 }
 
                 return queryOut;
@@ -948,8 +963,6 @@ var JQQueryBuilder = React.createClass({
  * Responsible for the Tab Bar between Search UI and Results and the view-specific controls inside it.
  *
  * Communicates tab, page no. and page limit selection back to VehicleDataApp
- * 
- * TODO: break down into smaller components when implenting MapView
  *
  * @param {object}    props.result        - Result object returned by the server
  * @param {function}  props.onShowSearch  - Callback to run when the "show search" button is clicked

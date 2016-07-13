@@ -1,7 +1,23 @@
 body {
     padding-bottom: 0px;
+    padding-top: 0px;
 }
 
+#bootloader_progress {
+    width: '33%';
+    height: '10px';
+}
+
+
+#bootloader_error > div {
+    padding-left: 30px;
+    padding-top: 90px;
+}
+
+#bootloader_error > div > span {
+    color: #dddddd;
+    font-size: small;
+}
 
 #query_progress {
     z-index: 999;
@@ -12,8 +28,13 @@ body {
     width: 45%;
 }
 
-body {
-    padding-top: 0px;
+#query_progress {
+    position: fixed;
+    width: 100%;
+    height: 10px;
+    top: 0px;
+    left: 0px;
+    background-color: rgba(0,0,0,0);
 }
 
 #navbar_row {
@@ -25,36 +46,8 @@ body {
     padding-right: 0px;
 }
 
-
-/****
-body {
-    padding-top: 0px;
-}
-#navbar_row > div {
-    padding: 0px;
-}
-
-#navbar_row > div > nav {
-    margin-bottom: 0px;
-}
-
-#navbar_row > div > nav > div {
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-****/
-
 #maincontainer {
 
-}
-
-#query_progress {
-    position: fixed;
-    width: 100%;
-    height: 10px;
-    top: 0px;
-    left: 0px;
-    /*background-color: #ffffff;*/
 }
 
 #search_ui_group_0 {
@@ -78,7 +71,6 @@ body {
 #search_ui_show_btn {
     display: none
 }
-
 
 #search_button_container_rel {
     position: relative; 
@@ -161,3 +153,4 @@ body {
 #footer_row > * {
     font-size: 10px;
 }
+
