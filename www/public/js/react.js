@@ -172,13 +172,13 @@ var VehicleDataApp = React.createClass({
 
             findParam: null,
             sortParam: null,
-            limitParam: 50,
+            limitParam: 10,
             pageParam: 1,
-            
+
             result: {
                 docs: [],
                 total: 0,
-                limit: 50,
+                limit: 10,
                 page: 1,
                 pages: 1
             }
@@ -202,10 +202,12 @@ var VehicleDataApp = React.createClass({
                     <MainHeader/>
                     <AdvancedSearch
                         onQueryUpdate={this.handleFindParamUpdate}
+                        resize={this.resize}
                     />
                     <TabMenuBar
                         result={this.state.result}
                         loading={this.state.loading}
+                        tableFitment={this.getResultTableFitment()}
                         onTabChange={this.handleTabChange}
                         onShowSearch={this.handleShowSearch}
                         onPageChange={this.handlePageParamUpdate}
@@ -228,13 +230,13 @@ var VehicleDataApp = React.createClass({
      */
     componentDidMount: function(){
         // Install resize handler
-        jQuery(window).resize(VehicleDataApp.resize);
+        jQuery(window).resize(this.resize);
 
         // Run query with default params
         this.loadResults({
             find:  this.state.findParam,
             sort:  this.state.sortParam,
-            limit: this.state.limitParam,
+            limit: /*this.state.limitParam*/ this.getResultTableFitment(),
             page:  this.state.pageParam
         });
     },
@@ -243,7 +245,7 @@ var VehicleDataApp = React.createClass({
      * Readjusts element sizes after we've rendered something
      */
     componentDidUpdate: function(prevProps, prevState){
-        VehicleDataApp.resize();
+        this.resize();
     },
 
     /**
@@ -377,56 +379,80 @@ var VehicleDataApp = React.createClass({
         jQuery('#search_ui_row').show();
         jQuery('#search_ui_show_btn').hide();
         jQuery('#search_ui_hide_btn').show();
-        VehicleDataApp.resize();
+        this.resize();
     },
     
+    /**
+     * Returns the number of vertical pixels available for the result view
+     * 
+     * @return {int} Available result area height in pixels
+     */
+    getResultAreaHeight: function(){
+        var heightAdjustement = 20;
+        var winH = jQuery(window).height();
+
+        //var offset = jQuery('#vehicle_table_container').offset()['top'];
+        var vtc = jQuery('#vehicle_table_container');
+        var offset = vtc.length ? vtc.offset()['top'] : 0;
+        
+        var areaH = winH - offset - heightAdjustement;
+        return areaH;
+    },
+    
+    /**
+     * Returns the number of non-word-wrapped table rows that fit in this.getResultAreaHeight()
+     *
+     * @return {int}  Number of rows
+     */
+    getResultTableFitment: function(){
+	// One row without word-wrapping should be 31px tall
+        return Math.floor(this.getResultAreaHeight() / 30) - 3;
+    },
+
+    /**
+     * Handles window resize events
+     * 
+     * FIXME: remove jQueryisms, use component state correctly
+     */
+    resize: function(){
+        //console.log('VDA:resize()');
+
+        // Tweak the Search UI
+        if(jQuery('#search_ui :visible').length){
+            // Search UI is visible
+
+            // Reduce jitter in the UI by pre-expanding the query builder's container
+            if(jQuery('#search_ui').height() < 250){
+                jQuery('#search_ui_scroll_container').height('');
+
+            } else {
+                jQuery('#search_ui_scroll_container').height(275);
+            }
+
+            // Align the search button with the bottom of the QueryBuilder UI
+            jQuery('#search_button_container_rel').height(jQuery('#search_ui_scroll_container').height());
+
+        } else {
+            // Search UI is hidden, reset height adjustement
+            jQuery('#search_button_container_rel').height('');
+        }
+
+        // Adjust the vehicle table to full unused height
+        jQuery('#vehicle_table_container').height('' + this.getResultAreaHeight() + 'px');
+	
+        // Reinitialize fixed table headers. 
+        // Needed when either the window width or widget height changes
+        jQuery('#vehicle_table').stickyTableHeaders({ 
+            scrollableArea: jQuery("#vehicle_table_container")[0], 
+            fixedOffset: 2 
+        });
+    },
+
+
     /*
      * Static methods
      */
     statics: {
-        /**
-         * Handles window resize events
-         * 
-         * FIXME: remove jQueryisms, use component state correctly
-         */
-        resize: function(){
-            var heightAdjustement = 20;
-
-            // Tweak the Search UI
-            if(jQuery('#search_ui :visible').length){
-                // Search UI is visible
-
-                // Reduce jitter in the UI by pre-expanding the query builder's container
-                if(jQuery('#search_ui').height() < 250){
-                    jQuery('#search_ui_scroll_container').height('');
-
-                } else {
-                    jQuery('#search_ui_scroll_container').height(275);
-                }
-
-                // Align the search button with the bottom of the QueryBuilder UI
-                jQuery('#search_button_container_rel').height(jQuery('#search_ui_scroll_container').height());
-
-            } else {
-                // Search UI is hidden, reset height adjustement
-                jQuery('#search_button_container_rel').height('');
-            }
-
-            // Adjust the vehicle table to full unused height
-            var winH = jQuery(window).height();
-            var offset = jQuery('#vehicle_table_container').offset()['top'];
-            var areaH = '' + (winH - offset - heightAdjustement) + 'px';
-            jQuery('#vehicle_table_container').height(areaH);
-
-            // Reinitialize fixed table headers. 
-            // Needed when either the window width or widget height changes
-            jQuery('#vehicle_table').stickyTableHeaders({ 
-                scrollableArea: jQuery("#vehicle_table_container")[0], 
-                fixedOffset: 2 
-            });
-        },
-
-
         /**
          * Map enum columns' values to their human-readable translations in given language
          *
@@ -521,12 +547,12 @@ var MainHeader = React.createClass({
     render: function(){
         return(
             <div id="navbar_row" className="row">
-                <div className="col-md-11">
+                <div className="col-lg-11 col-md-11 col-sm-11 col-xs-10">
                     <nav className="well well-sm" style={{borderRadius: '0px', paddingLeft: '20px'}}>
                         vehicledata.fi
                     </nav>
                 </div>
-                <div className="col-md-1">
+                <div className="col-lg-1 col-md-1 col-sm-1 col-xs-2">
                     <nav className="well well-sm" 
                          style={{borderRadius: '0px', textAlign: 'center'}}>
                         <a href="http://ppar.github.io/trafi-opendata/" 
@@ -546,6 +572,7 @@ var MainHeader = React.createClass({
  * TBD: Implement a simple search UI too
  * 
  * @param {function}   props.onQueryUpdate  - Callback to run when the search button is clicked
+ * @param {function}   props.resize         - Callback for requesting a window resize
  */ 
 var AdvancedSearch = React.createClass({
     render: function(){
@@ -553,7 +580,7 @@ var AdvancedSearch = React.createClass({
             <div id="search_ui_row" className="row search_ui">
                 <div className="col-md-11 col-sm-11 col-xs-10">
                     <div id="search_ui_scroll_container">
-                      <QueryBuilder id="search_ui"/>
+                      <QueryBuilder id="search_ui" resize={this.props.resize} />
                     </div>
                 </div>
 
@@ -566,7 +593,7 @@ var AdvancedSearch = React.createClass({
                                     onClick={this.handleHideClick}
                                     aria-expanded="false">
                                 <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
-                                Hide search
+                                <span className="hidden-sm hidden-xs">Hide search</span>
                             </button>
                          </div>
                         <div id="search_button_container_abs">
@@ -575,7 +602,8 @@ var AdvancedSearch = React.createClass({
                                     className="btn btn-default btn-sm btn-block"
                                     onClick={this.handleSearchClick}
                                     aria-expanded="false">
-                                Search
+                                <span className="hidden-lg hidden-md" style={{fontSize: 'smaller'}}>-&gt;</span>
+                                <span className="hidden-sm hidden-xs">Search</span>
                             </button>
                         </div>
                     </div>
@@ -592,7 +620,8 @@ var AdvancedSearch = React.createClass({
         jQuery('#search_ui_row').hide();
         jQuery('#search_ui_hide_btn').hide();
         jQuery('#search_ui_show_btn').show();
-        jQuery(window).resize();
+        //jQuery(window).resize();
+        this.props.resize();
     },
     
     /**
@@ -609,7 +638,8 @@ var AdvancedSearch = React.createClass({
 /**
  * QueryBuilder widget in the Advanced Search -- app-specific parts
  *
- * @param  {string} props.id  - DOM ID
+ * @param  {string}    props.id        - DOM ID
+ * @param  {function}  props.resize    - Callback for requesting a window resize
  */
 var QueryBuilder = React.createClass({
     /**
@@ -620,17 +650,8 @@ var QueryBuilder = React.createClass({
         var qbConfig = QueryBuilder.getConfiguration();
 
         return(
-            <JQQueryBuilder id={this.props.id} config={qbConfig} onAll={VehicleDataApp.resize} />
+            <JQQueryBuilder id={this.props.id} config={qbConfig} onAll={this.props.resize} />
         );
-    },
-
-    /**
-     *
-     */
-    allEventsHandler: function(){
-        // Make sure the rest of the UI reacts properly to the query UI changing its size. 
-        // FIXME: jQueryism; propagate state change to parent class(es)
-        VehicleDataApp.resize();
     },
 
     /**
@@ -941,6 +962,7 @@ var JQQueryBuilder = React.createClass({
  *
  * @param {object}    props.result        - Result object returned by the server
  * @param {object}    props.loading       - There's an Ajax request running
+ * @param {object}    props.tableFitment  - 
  * @param {function}  props.onShowSearch  - Callback to run when the "show search" button is clicked
  * @param {function}  props.onTabChange   - Callback to run when tab is changed
  * @param {function}  props.onPageChange  - Callback to run when a new page is selected (for table view)
@@ -958,12 +980,12 @@ var TabMenuBar = React.createClass({
                      : '');
         ***/
         var stats = (this.props.result.total && this.props.result.full
-                     ? ( <span>{this.props.result.total} ({matchPct}%) matched</span>)
+                     ? ( <span>{this.props.result.total} rows ({matchPct}%)<br/>{this.props.result.pages} pages</span>)
                      : '');
 
         return(
             <div id="result_tab_row" className="row">
-              <div className="col-md-2 col-sm-2 col-xs-2">
+              <div className="col-lg-2 col-md-2 col-sm-3 col-xs-3">
                 <ul className="nav nav-tabs">
                   <li role="presentation" className="active tab_table">
                       <a className="tab_button tab_table" href="" onClick={this.handleTableTabClick}>Table</a>
@@ -974,9 +996,7 @@ var TabMenuBar = React.createClass({
                 </ul>
               </div>
 
-              <div className="col-md-1 hidden-sm hidden-xs" id="result_stats">{stats}</div>
-
-              <div className="col-md-3 col-sm-4 col-xs-4">
+              <div className="col-lg-3 col-md-3 col-sm-4 col-xs-2">
                   <nav>
                       <TableViewPagination 
                           page={this.props.result.page}
@@ -985,7 +1005,7 @@ var TabMenuBar = React.createClass({
                       />
                   </nav>
               </div>
-              <div className="col-md-2 col-sm-2 col-xs-2">
+              <div className="col-lg-2 col-md-2 col-sm-2 col-xs-2">
                   <TableViewPageInput 
                           id="page_no_input"
                           page={this.props.result.page}
@@ -995,10 +1015,19 @@ var TabMenuBar = React.createClass({
                   />
               </div>
 
-              <div className="col-md-3 hidden-sm hidden-xs">
+              <div className="col-lg-2 col-md-2 col-sm-1 col-xs-2">
+                  <TableViewPageLimitSelector 
+                      id="page_limit_selector"
+                      limit={this.props.result.limit}
+                      fitment={this.props.tableFitment}
+                      onSelection={this.props.onLimitChange}
+                  />
               </div>
 
-              <div className="col-md-1 col-sm-1 col-xs-1" id="">
+              <div className="col-lg-2 col-md-2 hidden-sm hidden-xs" id="result_stats">{stats}</div>
+              <div className="hidden-lg hidden-md col-sm-1 col-sm-1"></div>
+
+              <div className="col-lg-1 col-md-1 col-sm-1 col-xs-1" id="">
                 <div id="search_ui_show_btn_container">
                     <ShowSearchButton id="search_ui_show_btn" onClickEvent={this.props.onShowSearch} />
                 </div>
@@ -1032,10 +1061,7 @@ var TabMenuBar = React.createClass({
  */
 var TableViewPagination = React.createClass({
     render: function(){
-        // Number of buttons to display (odd)
-        var pageButtons = 5;
-
-        // prevButton
+        // "Previous" button
         var prevButton = this.props.page > 2 
             ? (<li id="table_pagination_prev" 
                     data-pageno={(this.props.page - 1)} 
@@ -1046,15 +1072,29 @@ var TableViewPagination = React.createClass({
                    <a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
                </li>);
 
-        // numberButtons
+
+        // Number buttons
         var numberButtons = [];
-/**********/
+
+        // Number of buttons to display (odd)
+        // Reduce number of buttons with large page numbers (FIXME: crude)
+        var pageButtons = this.props.page <= 1000 ? 5 : this.props.page <= 10000 ? 5 : this.props.page < 100000 ? 3 : 3;
         var start = (this.props.page - (pageButtons-1)/2);
         var end   = (this.props.page + (pageButtons-1)/2);
+
         for(var i = start; i <= end; i++){
             var key = 'page_' + i;
+
+            // Reduce the number of buttons on small displays
+            var hiddenClasses = 'hidden-xs ';
+            if(i - start < 1 || end - i < 1){
+                //hiddenClasses += 'hidden-sm hidden-md';
+                hiddenClasses += 'hidden-sm';
+            }
+
             if(i >= 1 && i <= this.props.maxPage && this.props.maxPage > 0){
-                var className='table_pagination_page ' + (i === this.props.page ? 'active' : '');
+                // Number button
+                var className='table_pagination_page ' + hiddenClasses + ' ' + (i === this.props.page ? 'active' : '');
                 numberButtons.push(
                     <li key={key} 
                         className={className} 
@@ -1065,15 +1105,17 @@ var TableViewPagination = React.createClass({
                 );
                 
             } else {
+                // Dummy button
+                className = 'table_pagination_page disabled ' + hiddenClasses;
                 numberButtons.push(
-                    <li key={key} className="table_pagination_page disabled" onClick={this.ignoreClick}>
+                    <li key={key} className={className} onClick={this.ignoreClick}>
                         <a href="#">.</a>
                     </li>
                 );
             }
         }
-/***********/
-        // Next button
+
+        // "Next" button
         var nextButton = this.props.page < this.props.maxPage
             ? (<li id="table_pagination_next"
                    data-pageno={(this.props.page + 1)} 
@@ -1100,12 +1142,10 @@ var TableViewPagination = React.createClass({
     // Click handler
     handleClick: function(e){
         e.preventDefault();
-
         var newPage = parseInt(e.currentTarget.getAttribute('data-pageno'));
         if(!newPage || newPage < 1 || newPage > this.props.maxPage){
             return;
         }
-
         this.props.onSelection(newPage);
     }
 });
@@ -1212,6 +1252,80 @@ var TableViewPageInput = React.createClass({
     },
 });
 
+
+/**
+ * 
+ *
+ * @param {string}    props.id           - DOM ID
+ * @param {int}       props.limit        - Current number of rows per page
+ * @param {int}       props.fitnemt      - Current optimal number of rows per page
+ * @param {function}  props.onSelection  - Callback to run when the value is changed
+ */
+var TableViewPageLimitSelector = React.createClass({
+    /**
+     *
+     */
+    getInitialState: function(){
+        return { limit: this.props.limit };
+    },
+
+    /**
+     *
+     */
+    render: function(){
+        console.log('render: props.limit=' + this.props.limit + ', state.limit=' + this.state.limit);
+
+        var choices = [];
+        [10, 20, 50, 100, 250, 500].forEach(function(limit, i, arr){                
+            if(limit === this.state.limit){
+                choices.push(<li><a href="#"><b>{limit}</b></a></li>);
+
+            } else {
+                choices.push(<li><a href="#" onClick={this.handleClick} data-limit={limit}>{limit}</a></li>);
+            }
+
+            if(this.props.fitment > limit && (i == arr.length - 1 || this.props.fitment < arr[i+1])){
+                choices.push(<li><a href="#" onClick={this.handleClick} data-limit={this.props.fitment}>{this.props.fitment} (fit to page)</a></li>);
+            }
+        }.bind(this));
+
+        return(
+            <div id={this.props.id} className="dropdown">
+                <button className="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">{this.state.limit} rows/pg<span className="caret"></span></button>
+                <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">{choices}</ul>
+            </div>
+        );
+    },
+
+    /**
+     *
+     */
+    componentDidMount: function(){
+
+    },
+
+    /**
+     *
+     */
+    componentWillReceiveProps: function(newProps){
+        console.log('CWRP: newProps.limit=' + newProps.limit + ', props.limit=' + this.props.limit + ', state.limit=' + this.state.limit);
+        this.setState({ limit: newProps.limit });
+    },
+
+    /**
+     *
+     */
+    handleClick: function(e){
+        var newLimit = parseInt(e.currentTarget.getAttribute('data-limit'));
+        console.log('handleClick: newLimit=' + newLimit + ', props.limit=' + this.props.limit + ', state.limit=' + this.state.limit);
+
+        this.setState({ limit: newLimit });
+        this.props.onSelection(newLimit);
+    }
+});
+
+
+
 /**
  * "Show search" button in the TabMenuBar component
  */
@@ -1225,7 +1339,7 @@ var ShowSearchButton = React.createClass({
                 onClick={this.props.onClickEvent}
                 aria-expanded="false">
                 <span className="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
-                Show search
+                <span className="hidden-sm hidden-xs">Show search</span>
             </button>
         );
     }

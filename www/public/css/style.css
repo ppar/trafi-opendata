@@ -110,6 +110,10 @@ body {
     display: none;
 }
 
+#result_stats {
+    font-size: smaller;
+}
+
 #vehicle_map_row {
     display: none;
 }
@@ -120,6 +124,17 @@ body {
 
 #table_pagination>li>a {
     color: #000000;
+}
+
+#table_pagination > li > a {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+#table_pagination_prev,
+#table_pagination_next,
+.table_pagination_page {
+    /*font-size: small;*/
 }
 
 .table_pagination_page.disabled {
