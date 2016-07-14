@@ -45,6 +45,7 @@ var BootLoader = React.createClass({
             window.metadata        = this.state.metadata;
             window.columns         = this.state.columns;
             window.visibleColumns  = this.state.visibleColumns;
+            // Finnish column names come from the source data
             window.distinctProperties = {
                 merkkiSelvakielinen: this.state.makes
             };
@@ -203,11 +204,12 @@ var VehicleDataApp = React.createClass({
                         onQueryUpdate={this.handleFindParamUpdate}
                     />
                     <TabMenuBar
+                        result={this.state.result}
+                        loading={this.state.loading}
                         onTabChange={this.handleTabChange}
                         onShowSearch={this.handleShowSearch}
                         onPageChange={this.handlePageParamUpdate}
                         onLimitChange={this.handleLimitParamUpdate}
-                        result={this.state.result}
                     />
                     <TableView 
                         result={this.state.result}
@@ -222,11 +224,13 @@ var VehicleDataApp = React.createClass({
     },
 
     /**
-     * Initialization - run query with default params
+     * Initialization
      */
     componentDidMount: function(){
+        // Install resize handler
         jQuery(window).resize(VehicleDataApp.resize);
 
+        // Run query with default params
         this.loadResults({
             find:  this.state.findParam,
             sort:  this.state.sortParam,
@@ -277,12 +281,7 @@ var VehicleDataApp = React.createClass({
      * Receives limit (page size) selection from the TabMenuBar component 
      */
     handleLimitParamUpdate: function(limit){
-        this.loadResults({
-            find:  this.state.findParam,
-            sort:  this.state.sortParam,
-            limit: limit,
-            page:  this.state.pageParam
-        });
+        this.loadResults({ limit: limit });
     },
         
     /**
@@ -366,32 +365,8 @@ var VehicleDataApp = React.createClass({
 
         // do nothing until map view is implemented
 
-        /****
-
         // 'TABLE' or 'MAP'
-        this.setState({view: newTab});
-        
-        // FIXME: jQueryisms
-        if(newTab == 'TABLE'){
-            jQuery('li.tab_map').removeClass('active');
-            jQuery('#result_controls_map').hide();
-            jQuery('#vehicle_map_row').hide();
-            
-            jQuery('li.tab_table').addClass('active');
-            jQuery('#result_controls_table').show();
-            jQuery('#vehicle_table_row').show();
-
-        } else if(newTab == 'MAP'){
-            jQuery('li.tab_table').removeClass('active');
-            jQuery('#result_controls_table').hide();
-            jQuery('#vehicle_table_row').hide();
-            
-            jQuery('li.tab_map').addClass('active');
-            jQuery('#result_controls_map').show();
-            jQuery('#vehicle_map_row').show();
-        }
-
-        ***/
+        //this.setState({view: newTab});
     },
     
     /**
@@ -965,6 +940,7 @@ var JQQueryBuilder = React.createClass({
  * Communicates tab, page no. and page limit selection back to VehicleDataApp
  *
  * @param {object}    props.result        - Result object returned by the server
+ * @param {object}    props.loading       - There's an Ajax request running
  * @param {function}  props.onShowSearch  - Callback to run when the "show search" button is clicked
  * @param {function}  props.onTabChange   - Callback to run when tab is changed
  * @param {function}  props.onPageChange  - Callback to run when a new page is selected (for table view)
@@ -974,15 +950,20 @@ var TabMenuBar = React.createClass({
     render: function(){
         var matchPct = (100 * parseInt(this.props.result.total) / parseInt(this.props.result.full)).toFixed(2);
 
+        /***
         var stats = (this.props.result.total && this.props.result.full
                      ? ( <span>{this.props.result.total} / {this.props.result.full} <br/>
                              <span style={{'whiteSpace': 'nowrap'}}>vehicles matched ({matchPct}%)</span>
                          </span>)
                      : '');
+        ***/
+        var stats = (this.props.result.total && this.props.result.full
+                     ? ( <span>{this.props.result.total} ({matchPct}%) matched</span>)
+                     : '');
 
         return(
             <div id="result_tab_row" className="row">
-              <div className="col-md-2">
+              <div className="col-md-2 col-sm-2 col-xs-2">
                 <ul className="nav nav-tabs">
                   <li role="presentation" className="active tab_table">
                       <a className="tab_button tab_table" href="" onClick={this.handleTableTabClick}>Table</a>
@@ -993,10 +974,9 @@ var TabMenuBar = React.createClass({
                 </ul>
               </div>
 
-              <div className="col-md-2" id="result_stats">{stats}</div>
+              <div className="col-md-1 hidden-sm hidden-xs" id="result_stats">{stats}</div>
 
-              <div className="col-md-7">
-                <div id="result_controls_table">
+              <div className="col-md-3 col-sm-4 col-xs-4">
                   <nav>
                       <TableViewPagination 
                           page={this.props.result.page}
@@ -1004,19 +984,21 @@ var TabMenuBar = React.createClass({
                           onSelection={this.props.onPageChange} 
                       />
                   </nav>
+              </div>
+              <div className="col-md-2 col-sm-2 col-xs-2">
                   <TableViewPageInput 
+                          id="page_no_input"
                           page={this.props.result.page}
                           maxPage={this.props.result.pages}
+                          loading={this.props.loading}
                           onSelection={this.props.onPageChange}
                   />
-                </div>
-
-                <div id="result_controls_map">
-                  ...
-                </div>
               </div>
 
-              <div className="col-md-1" id="">
+              <div className="col-md-3 hidden-sm hidden-xs">
+              </div>
+
+              <div className="col-md-1 col-sm-1 col-xs-1" id="">
                 <div id="search_ui_show_btn_container">
                     <ShowSearchButton id="search_ui_show_btn" onClickEvent={this.props.onShowSearch} />
                 </div>
@@ -1051,7 +1033,7 @@ var TabMenuBar = React.createClass({
 var TableViewPagination = React.createClass({
     render: function(){
         // Number of buttons to display (odd)
-        var pageButtons = 7;
+        var pageButtons = 5;
 
         // prevButton
         var prevButton = this.props.page > 2 
@@ -1066,6 +1048,7 @@ var TableViewPagination = React.createClass({
 
         // numberButtons
         var numberButtons = [];
+/**********/
         var start = (this.props.page - (pageButtons-1)/2);
         var end   = (this.props.page + (pageButtons-1)/2);
         for(var i = start; i <= end; i++){
@@ -1089,7 +1072,7 @@ var TableViewPagination = React.createClass({
                 );
             }
         }
-
+/***********/
         // Next button
         var nextButton = this.props.page < this.props.maxPage
             ? (<li id="table_pagination_next"
@@ -1130,21 +1113,103 @@ var TableViewPagination = React.createClass({
 /**
  * Page input widget for the table view
  *
- * @param {object}   props.result       - Result object returned by the server
+ * @param {int}      props.page         - Current page number
+ * @param {int}      props.maxPage      - Max page number (min. is assumed 1)
+ * @param {bool}     props.loading      - There is an Ajax request running
  * @param {function} props.onSelection  - Callback to run when a new page is selected (for table view)
  */
 var TableViewPageInput = React.createClass({
-    render: function(){
-        return false;
+    /** 
+     * Initial component state from props.page
+     */
+    getInitialState: function(){
+        return { 
+            page: this.props.page
+        };
     },
 
-    handleEnter: function(e){
-        e.preventDefault();
+    /**
+     * Render it
+     */
+    render: function(){
+        var errorClass = 'input-group' + (this.validate() ? '' : ' has-error');
 
-        // TBD
-        var newPage = 10;
+        return (
+            <div id={this.props.id} className={errorClass}>
+                <input type="text" className="form-control" placeholder="Page Nr" value={this.state.page} onChange={this.handleChange} />
+                <span className="input-group-btn">
+                    <button className="btn btn-default" type="button" onClick={this.handleClick}>Go</button>
+                </span>
+            </div>
+        );
+    },
+
+    /**
+     *
+     */
+    getInt: function(){
+        // TODO: strip spaces, etc
+        return intVal(this.state.page);
+    },
+
+    /**
+     * Validate that the input is 1) a number 2) not greater than maxPage
+     */
+    validate: function(){
+        // FIXME: '50asdasd' parses as (int) 50
+        if(isNaN(parseInt(this.state.page))){
+            return false;
+        }
+
+        if(parseInt(this.state.page) > parseInt(this.props.maxPage)){
+            return false;
+        }
+
+        return true;
+    },
+
+    /**
+     * React will set new property values in this Component
+     */
+    componentWillReceiveProps: function(newProps){
+        if(!newProps.loading){
+            // React will reuse this component instance when new Ajax pages are loaded and will only 
+            // update the page number in the property. Keep the state in sync when properties change.
+            this.setState({ page: newProps.page });
+
+        } else {
+            // When starting an Ajax request, showing the loading bar will trigger a state change that
+            // would cause this Component to re-render with the previous value, temporarily reverting 
+            // the user's input, which looks ugly. Ignore property updates when there's an active XHR on.
+            return;
+        }
+    },
+
+    /**
+     * User has typed something in the input
+     * Mandatory React callback 
+     */
+    handleChange: function(e){
+        this.setState({ page: e.target.value });
+    },
+
+    /**
+     * User has pressed enter
+     */
+    handleEnter: function(e){
+        //e.preventDefault();
+        var newPage = e.currentTarget.getAttribute('value');
         this.props.onSelection(newPage);
-    }
+    },
+
+    /**
+     * User has clicked the submit button
+     */
+    handleClick: function(e){
+        //var newPage = parseInt(window.getElementById(this.props.id).getAttribute('value'));
+        var newPage = jQuery('#' + this.props.id + ' input').attr('value');
+        this.props.onSelection(newPage);
+    },
 });
 
 /**
