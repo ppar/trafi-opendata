@@ -1,0 +1,24 @@
+{
+  "name": "trafi-opendata",
+  "version": "1.0.0",
+  "description": "JSON API and a web interface for accessing open vehicle registration data released by [http://www.trafi.fi/](Trafi), the Finnish Transport Safety Agencey.",
+  "main": "",
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^3.0.1",
+    "eslint-plugin-react": "^5.2.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ppar/trafi-opendata.git"
+  },
+  "author": "",
+  "license": "",
+  "bugs": {
+    "url": "https://github.com/ppar/trafi-opendata/issues"
+  },
+  "homepage": "https://github.com/ppar/trafi-opendata#readme"
+}

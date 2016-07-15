@@ -2,3 +2,4 @@
 rawdata/
 junk/
 json-api/config/db.js
+node_modules/
