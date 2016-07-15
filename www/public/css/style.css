@@ -46,6 +46,19 @@ body {
     padding-right: 0px;
 }
 
+#beta_tag {
+    float: left;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+    font-size: smaller;
+    margin-left: 88px;
+    margin-top: -22px;
+    color: #aaaaaa;
+}
+
 #maincontainer {
 
 }

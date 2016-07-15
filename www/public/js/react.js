@@ -549,9 +549,11 @@ var MainHeader = React.createClass({
             <div id="navbar_row" className="row">
                 <div className="col-lg-11 col-md-11 col-sm-11 col-xs-10">
                     <nav className="well well-sm" style={{borderRadius: '0px', paddingLeft: '20px'}}>
-                        vehicledata.fi
+                        <div>vehicledata.fi</div>
+                        <div id="beta_tag">[beta]</div>
                     </nav>
                 </div>
+
                 <div className="col-lg-1 col-md-1 col-sm-1 col-xs-2">
                     <nav className="well well-sm" 
                          style={{borderRadius: '0px', textAlign: 'center'}}>
