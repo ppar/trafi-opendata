@@ -91,6 +91,7 @@ var main = function(){
     app.use(function(req, res, next){
         res.status(404);
         res.json({ error: 'Invalid URL' });
+        next();
     });
 
     // Start Application

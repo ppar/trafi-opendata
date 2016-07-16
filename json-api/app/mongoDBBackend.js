@@ -7,14 +7,12 @@
 // Modules
 var mongoose          = require('mongoose');
 var mongoosePaginate  = require('mongoose-paginate');
+var async             = require('async');
 //var logger            = require('./logger');
 
 // Configuration & state
 var metadata          = require('../../metadata');
 var dbConfig          = require('../config/db');
-var mysqlConn         = null;
-var apiCalls          = {};
-
 
 /**
  * Initialization function
@@ -59,7 +57,7 @@ exports.setRoutes = function(router){
         }
     }
     
-    var vehicleSchema = new mongoose.Schema(vehicleSchema, { collection: 'vehicles' } );
+    vehicleSchema = new mongoose.Schema(vehicleSchema, { collection: 'vehicles' } );
     vehicleSchema.plugin(mongoosePaginate);
 
     var VehicleModel = mongoose.model('Vehicle', vehicleSchema);
@@ -148,7 +146,7 @@ exports.setRoutes = function(router){
                         resultJSON = { error: errStr };
                         console.log(errStr);
                         console.log(err);
-                        cb(new Error(errStr));
+                        callback(new Error(errStr));
                         return;
                     }
 
@@ -156,10 +154,10 @@ exports.setRoutes = function(router){
                     console.log(mongoResult);
 
                     resultStatus = 200;
-                    for(pn in resultParams){
+                    for(var pn in resultParams){
                         resultJSON[resultParams[pn]] = mongoResult[pn];
                     }
-
+                    
                     callback(null);
                 });
             }
@@ -167,7 +165,7 @@ exports.setRoutes = function(router){
 
         // Perform query and send response
         // FIXME: async.series() is really overkill here since there's only one function to run.
-        async.series(tasks, function finalizer(err, results){
+        async.series(tasks, function finalizer(/*err*/ /*, results*/){
             if(null == resultStatus){
                 res.status(200);
             } else {
