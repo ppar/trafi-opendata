@@ -40,12 +40,14 @@ var BootLoader = React.createClass({
         } else {
             // Loading complete
 
-            // FIXME: this is static data; arrange so that all components
-            // can access it in a sensible way w/o passing it around in properties
+            // FIXME: This is static data - arrange so that all components 
+            //        can access static metadata in a sensible way w/o passing 
+            //        it around in properties
+            //        
             window.metadata        = this.state.metadata;
             window.columns         = this.state.columns;
-            window.visibleColumns  = this.state.visibleColumns;
-            // Finnish column names come from the source data
+
+            // Column names in Finnish language come from Trafi's data definition
             window.distinctProperties = {
                 merkkiSelvakielinen: this.state.makes
             };
@@ -55,14 +57,13 @@ var BootLoader = React.createClass({
                         metadata={this.state.metadata}
                         makes={this.state.makes}
                         columns={this.state.columns}
-                        visibleColumns={this.state.visibleColumns} />);
+                    />);
         }
     },
 
     // Load data & render again
     componentDidMount: function(){
         // Load metadata from the server and process it.
-
         // FIXME: use a sane async library instead of callback pyramids
 
         // Load columns
@@ -88,26 +89,13 @@ var BootLoader = React.createClass({
                             if(metadata.vehicles.columns[col].type == 'enum'){
                                 var list = metadata.vehicles.columns[col]['enum'];
                                 var dict = {};
-                                for(i in list){
+                                for(var i in list){
                                     dict[list[i].key] = list[i];
                                 }
                                 metadata.vehicles.columns[col]['enumByKey'] = dict;
                             }
                         }
                         
-                        // Convenience array containing visible columns
-                        var visibleColumns = [];
-                        for(var i in columns){
-                            if(columns[i].defaultVisibility){
-                                visibleColumns.push({
-                                    'name': columns[i].columnName, 
-                                    'label': (metadata.vehicles.columns[columns[i].columnName]
-                                              ? metadata.vehicles.columns[columns[i].columnName].name['en']
-                                              : columns[i].columnName)
-                                });
-                            }
-                        }
-
                         // Load car makes
                         path = '/api/v1.0/vehicles/propertyDistinct/merkkiSelvakielinen';
                         jQuery.ajax(path, {
@@ -118,7 +106,6 @@ var BootLoader = React.createClass({
                                     state: 'done',
                                     metadata: metadata,
                                     columns: columns,
-                                    visibleColumns: visibleColumns,
                                     makes: makes
                                 });
                             },
@@ -487,7 +474,6 @@ var VehicleDataApp = React.createClass({
             return value;
         },
 
-
         /**
          * Translate a 'vehicle' object's ENUM fields to given language
          *
@@ -501,6 +487,15 @@ var VehicleDataApp = React.createClass({
                 result[prop] = VehicleDataApp.translateEnum(prop, vehicle[prop], language);
             }
             return result;
+        },
+
+        /**
+         *
+         */
+        translateColumnName: function(columnName, language){
+            return (window.metadata.vehicles.columns[columnName] ?
+                    window.metadata.vehicles.columns[columnName].name[language] :
+                    columnName);
         }
     }
 });
@@ -702,11 +697,13 @@ var QueryBuilder = React.createClass({
                     label: col.name
                 };
 
+                /****
                 if(col.unit){ 
                     for(var lang in f.label){
                         f.label[lang] += ' (' + col.unit + ')';
                     }
                 }
+                ****/
 
                 // In the MongoDB backend, string fields have experimental shadow 
                 // fields named "<colName>_UPPER" to facilitate using indexes with 
@@ -954,7 +951,6 @@ var JQQueryBuilder = React.createClass({
     }
 });
 
-
 /**
  * TabMenuBar Component
  * 
@@ -1050,7 +1046,6 @@ var TabMenuBar = React.createClass({
         this.props.onTabChange('MAP');
     }
 });
-
 
 /**
  * Pagination widget for the table view
@@ -1254,7 +1249,6 @@ var TableViewPageInput = React.createClass({
     },
 });
 
-
 /**
  * 
  *
@@ -1293,8 +1287,8 @@ var TableViewPageLimitSelector = React.createClass({
 
         return(
             <div id={this.props.id} className="dropdown">
-                <button className="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">{this.state.limit} rows/pg<span className="caret"></span></button>
-                <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">{choices}</ul>
+                <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">{this.state.limit} rows/pg<span className="caret"></span></button>
+                <ul className="dropdown-menu">{choices}</ul>
             </div>
         );
     },
@@ -1326,8 +1320,6 @@ var TableViewPageLimitSelector = React.createClass({
     }
 });
 
-
-
 /**
  * "Show search" button in the TabMenuBar component
  */
@@ -1347,7 +1339,6 @@ var ShowSearchButton = React.createClass({
     }
 });
 
-
 /**
  * TableView Component
  * 
@@ -1357,7 +1348,25 @@ var ShowSearchButton = React.createClass({
  * @param  {bool}     props.visible  - Are we visible?
  */ 
 var TableView = React.createClass({
-    //
+    /**
+     *
+     */
+    getInitialState: function(){
+        // this.state.columns defines the columns' order and visibility
+        var columns = [];
+        window.columns.forEach(function(col, i, arr){
+            columns.push({
+                'name':     col.columnName, 
+                'visible':  col.defaultVisibility
+            });
+        });
+        
+        return { columns: columns };
+    },
+
+    /**
+     *
+     */
     render: function(){
         // Don't render anything when hidden
         if(! this.props.visible){
@@ -1366,34 +1375,48 @@ var TableView = React.createClass({
 
         // Build header
         var tableHeadCells = [];
-        for(var i in window.visibleColumns){
-            var name = window.visibleColumns[i].name;
-            var label = window.visibleColumns[i].label;
-            tableHeadCells.push(
-                <th key={name} data-columnName={name}>
-                    {label}
-                </th>
-            );
-        }
-        
+        this.state.columns.forEach(function(col, i, arr){
+            if(col.visible){
+                tableHeadCells.push(
+                    <th key={col.name} data-columnName={col.name}>
+                        {VehicleDataApp.translateColumnName(col.name, 'en')}
+                    </th>
+                );
+            }
+        });
+
+        // Column selector in the header
+/*****
+        var columnChoices = [];
+        window.columns.forEach(function(col, i, arr){
+            
+            columnChoices.push(<li><a href="#"><b></b></a></li>);
+        });
+
+        var columnSelector = 
+            <div className="dropdown">
+                <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"><span className="caret"></span></button>
+                <ul className="dropdown-menu">{columnChoices}</ul>
+            </div>
+            ;
+*****/
+
         // Build body
         var tableBodyRows = [];
         for(var i in this.props.result.docs){
             var vehicle = VehicleDataApp.translateVehicle(this.props.result.docs[i], 'en');
 
             var tableBodyCells = [];
-            for(var j in window.visibleColumns){
-                var colName = window.visibleColumns[j].name;
-                var key = vehicle + '.' + colName;
-                
-                tableBodyCells.push(
-                    <td key={key} 
-                        data-vehicleId={vehicle.id} 
-                        data-columnName={colName}>
-                        {vehicle[colName]}
-                    </td>
-                );
-            }
+            this.state.columns.forEach(function(col, i, err){
+                if(col.visible){
+                    var key = 
+                    tableBodyCells.push(
+                        <td key={vehicle.id + '.' + col.name}
+                            data-vehicleId={vehicle.id} 
+                            data-columnName={col.name}>{vehicle[col.name]}</td>
+                    );
+                }
+            });
 
             tableBodyRows.push(<tr key={vehicle.id} data-vehicleId={vehicle.id}>{tableBodyCells}</tr>);
         }
@@ -1427,8 +1450,6 @@ var TableView = React.createClass({
     }
 });
 
-
-
 /**
  * Map result view - TBD 
  */ 
@@ -1443,7 +1464,6 @@ var MapView = React.createClass({
         );
     }
 });
-
 
 /**
  * Main Footer
