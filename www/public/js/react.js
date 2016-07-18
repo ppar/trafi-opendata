@@ -194,7 +194,7 @@ var VehicleDataApp = React.createClass({
                     <TabMenuBar
                         result={this.state.result}
                         loading={this.state.loading}
-                        tableFitment={this.getResultTableFitment()}
+                        /*tableFitment={this.getResultTableFitment()}*/
                         onTabChange={this.handleTabChange}
                         onShowSearch={this.handleShowSearch}
                         onPageChange={this.handlePageParamUpdate}
@@ -203,6 +203,7 @@ var VehicleDataApp = React.createClass({
                     <TableView 
                         result={this.state.result}
                         visible={tableVisible}
+                        resize={this.resize}
                     />
                     <MapView
                         query={this.state.query} visible={mapVisible}/>
@@ -223,7 +224,7 @@ var VehicleDataApp = React.createClass({
         this.loadResults({
             find:  this.state.findParam,
             sort:  this.state.sortParam,
-            limit: /*this.state.limitParam*/ this.getResultTableFitment(),
+            limit: this.state.limitParam /*this.getResultTableFitment()*/,
             page:  this.state.pageParam
         });
     },
@@ -402,8 +403,6 @@ var VehicleDataApp = React.createClass({
      * FIXME: remove jQueryisms, use component state correctly
      */
     resize: function(){
-        //console.log('VDA:resize()');
-
         // Tweak the Search UI
         if(jQuery('#search_ui :visible').length){
             // Search UI is visible
@@ -425,8 +424,10 @@ var VehicleDataApp = React.createClass({
         }
 
         // Adjust the vehicle table to full unused height
-        jQuery('#vehicle_table_container').height('' + this.getResultAreaHeight() + 'px');
-	
+        var rh = this.getResultAreaHeight();
+        jQuery('#vehicle_table_container').height('' + rh + 'px');
+        jQuery('#vehicle_table_column_selector_menu_container').height('' + (rh - 80) + 'px');
+
         // Reinitialize fixed table headers. 
         // Needed when either the window width or widget height changes
         jQuery('#vehicle_table').stickyTableHeaders({ 
@@ -1017,7 +1018,7 @@ var TabMenuBar = React.createClass({
                   <TableViewPageLimitSelector 
                       id="page_limit_selector"
                       limit={this.props.result.limit}
-                      fitment={this.props.tableFitment}
+                      /*fitment={this.props.tableFitment}*/
                       onSelection={this.props.onLimitChange}
                   />
               </div>
@@ -1249,8 +1250,9 @@ var TableViewPageInput = React.createClass({
     },
 });
 
+
 /**
- * 
+ * The "n rows/page" selector widget for the table view
  *
  * @param {string}    props.id           - DOM ID
  * @param {int}       props.limit        - Current number of rows per page
@@ -1269,8 +1271,6 @@ var TableViewPageLimitSelector = React.createClass({
      *
      */
     render: function(){
-        console.log('render: props.limit=' + this.props.limit + ', state.limit=' + this.state.limit);
-
         var choices = [];
         [10, 20, 50, 100, 250, 500].forEach(function(limit, i, arr){                
             if(limit === this.state.limit){
@@ -1280,9 +1280,12 @@ var TableViewPageLimitSelector = React.createClass({
                 choices.push(<li><a href="#" onClick={this.handleClick} data-limit={limit}>{limit}</a></li>);
             }
 
+            // TODO: update fitment whenever UI resizes, then enable
+            /****
             if(this.props.fitment > limit && (i == arr.length - 1 || this.props.fitment < arr[i+1])){
                 choices.push(<li><a href="#" onClick={this.handleClick} data-limit={this.props.fitment}>{this.props.fitment} (fit to page)</a></li>);
             }
+            ****/
         }.bind(this));
 
         return(
@@ -1304,7 +1307,6 @@ var TableViewPageLimitSelector = React.createClass({
      *
      */
     componentWillReceiveProps: function(newProps){
-        console.log('CWRP: newProps.limit=' + newProps.limit + ', props.limit=' + this.props.limit + ', state.limit=' + this.state.limit);
         this.setState({ limit: newProps.limit });
     },
 
@@ -1313,15 +1315,13 @@ var TableViewPageLimitSelector = React.createClass({
      */
     handleClick: function(e){
         var newLimit = parseInt(e.currentTarget.getAttribute('data-limit'));
-        console.log('handleClick: newLimit=' + newLimit + ', props.limit=' + this.props.limit + ', state.limit=' + this.state.limit);
-
         this.setState({ limit: newLimit });
         this.props.onSelection(newLimit);
     }
 });
 
 /**
- * "Show search" button in the TabMenuBar component
+ * The "Show search" button in the TabMenuBar component
  */
 var ShowSearchButton = React.createClass({
     render: function(){
@@ -1342,7 +1342,7 @@ var ShowSearchButton = React.createClass({
 /**
  * TableView Component
  * 
- * Responsible for drawing the table results view
+ * Responsible for drawing the actual results table and the column selector widget
  *
  * @param  {object}   props.result   - Result object returned by the server
  * @param  {bool}     props.visible  - Are we visible?
@@ -1365,7 +1365,12 @@ var TableView = React.createClass({
     },
 
     /**
+     * Render function
+     * 
+     * Returns a container stub with just the column selector
      *
+     * @see componentDidUpdate()
+     * @see renderTableHtml()
      */
     render: function(){
         // Don't render anything when hidden
@@ -1373,81 +1378,158 @@ var TableView = React.createClass({
             return false;
         }
 
-        // Build header
-        var tableHeadCells = [];
-        this.state.columns.forEach(function(col, i, arr){
-            if(col.visible){
-                tableHeadCells.push(
-                    <th key={col.name} data-columnName={col.name}>
-                        {VehicleDataApp.translateColumnName(col.name, 'en')}
-                    </th>
-                );
-            }
-        });
-
-        // Column selector in the header
-/*****
         var columnChoices = [];
-        window.columns.forEach(function(col, i, arr){
-            
-            columnChoices.push(<li><a href="#"><b></b></a></li>);
-        });
+        this.state.columns.forEach(function(col, i, arr){
+            var visibleClass = 'vehicle_table_column_selector_item ' 
+                + (col.visible ? 'column_selector_selected' : '');
 
-        var columnSelector = 
-            <div className="dropdown">
-                <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"><span className="caret"></span></button>
-                <ul className="dropdown-menu">{columnChoices}</ul>
-            </div>
-            ;
-*****/
+            columnChoices.push(<li data-col={col.name} 
+                                   className={visibleClass}
+                                   onClick={this.toggleColumn}>
+                                   <a href="#" className={visibleClass}>
+                                       {VehicleDataApp.translateColumnName(col.name, 'en')}
+                                   </a>
+                               </li>
+                              );
+        }.bind(this));
 
-        // Build body
-        var tableBodyRows = [];
-        for(var i in this.props.result.docs){
-            var vehicle = VehicleDataApp.translateVehicle(this.props.result.docs[i], 'en');
-
-            var tableBodyCells = [];
-            this.state.columns.forEach(function(col, i, err){
-                if(col.visible){
-                    var key = 
-                    tableBodyCells.push(
-                        <td key={vehicle.id + '.' + col.name}
-                            data-vehicleId={vehicle.id} 
-                            data-columnName={col.name}>{vehicle[col.name]}</td>
-                    );
-                }
-            });
-
-            tableBodyRows.push(<tr key={vehicle.id} data-vehicleId={vehicle.id}>{tableBodyCells}</tr>);
-        }
-
-        // Put it all together
         return(
             <div id="vehicle_table_row" className="row">
-                <div className="col-md-12">
-                    <div id="vehicle_table_container">
-                        <table id="vehicle_table" className="table table-striped table-condensed">
-                            <thead><tr>{tableHeadCells}</tr></thead>
-                             <tbody>{tableBodyRows}</tbody>
-                        </table>
+                <div id="vehicle_table_col" className="col-md-12">
+                    <div id="vehicle_table_view">
+                        <div id="vehicle_table_container">
+                        </div>
+                        <div id="vehicle_table_column_selector" className="dropdown">
+                            <button className="btn btn-default dropdown-toggle" type="button" 
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                <span className="caret"></span>
+                            </button>
+                            <ul id="vehicle_table_column_selector_menu_container" 
+                                className="dropdown-menu dropdown-menu-right">{columnChoices}</ul>
+                        </div>
                     </div>
                 </div>
             </div>
         );
+
     },
 
-    //
-    componentDidMount: function(){
+    /**
+     * Builds the table content in HTML. 
+     *
+     * FIXME: This is an ugly workaround to enable completely redrawing the table - updates 
+     * via React would leave the layout broken when columns are added or removed, and 
+     * a simple .forceUpdate() doesn't help. This might be caused by the 
+     * jQuery.stickyTableHeaders plugin inserted in componentDidUpdate() too.
+     *
+     * Find the correct way to render this in React and build it in JSX
+     * 
+     * @return {string}   DIV with ID vehicle_table_view
+     */
+    renderTableHtml: function(){
+        // Build header
+        var tableHeadCells = '';
+        this.state.columns.forEach(function(col, i, arr){
+            if(col.visible){
+                tableHeadCells += 
+                    '<th key="' + col.name + '" data-columnName="' + col.name + '">'
+                        + VehicleDataApp.translateColumnName(col.name, 'en')
+                    + '</th>';
+            }
+        });
+
+        // Build body
+        var tableBodyRows = '';
+        this.props.result.docs.forEach(function(row, i, bodyArr){
+            var vehicle = VehicleDataApp.translateVehicle(this.props.result.docs[i], 'en');
+
+            var tableBodyCells = '';
+            this.state.columns.forEach(function(col, j, colArr){
+                if(col.visible){
+                    tableBodyCells += 
+                        '<td key="' + vehicle.id + '.' + col.name + '" '
+                            + 'data-vehicleId="' + vehicle.id + '" '
+                            + 'data-columnName="' + col.name + '">' 
+                            /* Note: React will cast nulll values to '' automatically */
+                            + (vehicle[col.name] === null ? '' : vehicle[col.name])
+                            + '</td>';
+                }
+            });
+
+            tableBodyRows += '<tr key="' + vehicle.id + '" data-vehicleId="' + vehicle.id + '">'
+                                 + tableBodyCells + '</tr>';
+        }.bind(this));
+
+        // Column selector in the header
+        /****
+        var columnChoices = '';
+        this.state.columns.forEach(function(col, i, arr){
+            if(col.visible){
+                columnChoices += '<li data-col="' + col.name + '" class="vehicle_table_column_selector_item">'
+                                       + '<a href="#"><b>' 
+                                       + VehicleDataApp.translateColumnName(col.name, 'en')
+                                       + '</b></a>'
+                                 + '</li>';
+
+            } else {
+                columnChoices += '<li data-col="' + col.name + '" class="vehicle_table_column_selector_item">'
+                                       + '<a href="#">'
+                                       + VehicleDataApp.translateColumnName(col.name, 'en')
+                                       + '</a>'
+                                  + '</li>';
+            }
+        }.bind(this));
+        *****/
+
+        return (''
+                        + '<table id="vehicle_table" class="table table-striped table-condensed">'
+                            + '<thead><tr>' + tableHeadCells + '</tr></thead>'
+                            + '<tbody>' + tableBodyRows + '</tbody>'
+                        + '</table>'
+
+               );
     },
 
-    //
+    /**
+     * Build table contents after the sub DIV has rendered
+     *
+     * Rationale: @see renderHtml()
+     */
     componentDidUpdate: function(prevProps, prevState){
+        // Remove and reinsert HTML
+        jQuery('#vehicle_table_container').html('');
+        jQuery('#vehicle_table_container').html(this.renderTableHtml());
+
+        // Event handler for the column menu
+        //jQuery('.vehicle_table_column_selector_item').click(this.toggleColumn);
+
         // Fix the headers in place
         jQuery('#vehicle_table').stickyTableHeaders({ 
             scrollableArea: jQuery("#vehicle_table_container")[0], 
             fixedOffset: 2 
         });
-    }
+
+        // Readjust table height
+        this.props.resize();
+    },
+    
+    /**
+     * Handle click events in the column selector menu
+     */
+    toggleColumn: function(e){
+        var newColumns = [];
+        var tgtColName = e.currentTarget.getAttribute('data-col');
+
+        // This is silly, but we're not allowed to modify this.state.
+        this.state.columns.forEach(function(col, i, arr){
+            newColumns[i] = { 
+                'name': col.name, 
+                'visible': (col.name == tgtColName ? !col.visible : col.visible)
+            };
+        });
+
+        this.setState({ columns: newColumns });
+    },
 });
 
 /**

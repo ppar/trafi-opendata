@@ -55,7 +55,7 @@ body {
     font-size: smaller;
     margin-left: 88px;
     margin-top: -22px;
-    color: #aaaaaa;
+    color: #ca1c1c;
 }
 
 #maincontainer {
@@ -89,13 +89,16 @@ body {
     height: 50px;
 }
 
-#search_hide_button_container_abs {
-    position: absolute; top: 0px; right: 0px;
+#search_button_container_abs {
+    position: absolute; 
+    bottom: 0px; 
+    right: 0px;
 }
 
-
-#search_button_container_abs {
-    position: absolute; bottom: 0px; right: 0px;
+#search_hide_button_container_abs {
+    position: absolute; 
+    top: 0px; 
+    right: 0px;
 }
 
 .selectize_control * {
@@ -159,9 +162,53 @@ body {
     background-color: rgb(233,233,233);
 }
 
+#vehicle_table_view {
+    position: relative;
+}
+
 #vehicle_table_container {
     height: 100px;
     overflow: auto;
+    /* always show the scrollbar next to #vehicle_table_column_selector */
+    overflow-y: scroll;
+}
+
+#vehicle_table th {
+    overflow: hidden;
+    white-space: nowrap;
+    /**text-overflow: ellipsis;**/
+}
+
+#vehicle_table td {
+    /**overflow: hidden;
+    white-space: nowrap;**/
+    word-wrap: break-word;
+}
+
+#vehicle_table_column_selector {
+    position: absolute;
+    top: 0px;
+    /* left of the scrollbar */
+    right: 18px;
+
+    z-index: 99;
+}
+
+#vehicle_table_column_selector > button {
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    margin-top: 3px;
+}
+
+#vehicle_table_column_selector_menu_container {
+    height: 300px;
+    overflow-y: auto;
+}
+
+.column_selector_selected a {
+    font-weight: bold !important;
 }
 
 #vehicle_table_container thead.tableFloatingHeaderOriginal {
