@@ -164,6 +164,20 @@ header {
   -webkit-font-smoothing:subpixel-antialiased;
 }
 
+#toc {
+    list-style-type: none; 
+    padding-left: 16px;
+}
+
+#toc a {
+    color: black;
+}
+
+#toc a:hover {
+    color: #39c;
+}
+
+/*******
 header ul {
   list-style:none;
   height:40px;
@@ -206,6 +220,7 @@ header ul a:hover {
 header ul a:active {
   background-color:#f0f0f0;
 }
+*******/
 
 strong {
   color:#222;
