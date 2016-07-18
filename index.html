@@ -34,9 +34,9 @@
 
         <h2><a id="why" class="anchor" href="#why"></a>Why</h2>
         <p>
-          I wrote this thing mostly to get acquainted with NodeJS and some modern UI framework. Also, 
-          there was no practical interface to this data available until now, so some car hobbyists and 
-          vehicle register enthusiasts(!) might even find the service useful.
+          I wrote this thing mostly to get acquainted with NodeJS, MongoDB and some modern UI framework. 
+          Also, there hasn't been a practical interface available for this data, and it looked like there 
+          could be some demand in the hobbyist community for it.
         </p>
 
         <h2><a id="implementation" class="anchor" href="#implementation"></a>Implementation</h2>
@@ -44,7 +44,7 @@
         <p>
           The JSON API runs on <a href="http://nodejs.org/">Node.js</a> and 
           <a href="http://expressjs.com/">Express.js</a> and provides a simple read-only interface to a 
-          single 5+M row table stored in <a href="http://mariadb.org/">MariaDB</a>/MySQL.
+          (currently) single 5+M row table stored in <a href="http://mariadb.org/">MariaDB</a>/MySQL.
         </p>
         <p>
           There is experimental support for using a MongoDB 
@@ -59,7 +59,7 @@
           the layout.
         </p>
           
-        <p>Python scripts are used to normalize and import the CSV data provided by Trafi.</p>
+        <p>Python scripts are used to sanitize and import the CSV data provided by Trafi.</p>
 
         <h2><a id="data" class="anchor" href="#data"></a>Performance</h2>
         <h3><a id="mariadb" class="anchor" href="#mariadb"></a>MariaDB/MySQL</h3>
@@ -74,7 +74,14 @@
           Trivial queries hitting indexes and/or queries where an indexed column significantly 
           reduces the # of seekable rows (like selecting a specific car make) perform quite
           well. Substring queries causing long disk seeks are still painfully slow.
-        </p>          
+        </p>
+        <p>
+          Pages with high numbers also load slowly - is it a slow LIMIT ... OFFSET ... implementation
+          or just data absent from IO cache? Using a memory based engine for the whole R/O database 
+          should also give nice overall performance.
+        </p>
+          At any rate, the database should be normalized, at least over the "make" column, to reduce size.
+        </p>
 
         <h3><a id="mongodb" class="anchor" href="#mongodb"></a>MongoDB</h3>
         <p>
